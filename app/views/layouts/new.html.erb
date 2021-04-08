@@ -1,0 +1,31 @@
+<h1>New Upload</h1>
+<input type="file" id="input" multiple>
+
+<%= form_with model: @article do |form| %>
+  <div id="titles">
+    <%= form.text_field :title %>
+  </div>
+
+  <div id="data">
+    <%= form.text_area :body %>
+  </div>
+
+  <div>
+    <% @article.errors.full_messages_for(:body).each do |message| %>
+      <div><%= message %></div>
+    <% end %>
+    <%= form.submit %>
+  </div>
+<% end %>
+
+<script type="text/javascript">
+  const fileTitleElement = document.getElementById("titles")
+  const fileDataElement = document.getElementById("data")
+  const inputElement = document.getElementById("input");
+  inputElement.addEventListener("change", handleFiles, false);
+  function handleFiles() {
+    const file = this.file[0];
+    console.log(fileTitleElement)
+    console.log(fileDataElement)
+  }
+</script>

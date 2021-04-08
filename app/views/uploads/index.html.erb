@@ -1,0 +1,36 @@
+<h1>The Lucky Lexer</h1>
+<h4>by Josua Botha u19138182</h4>
+<h3><%= link_to "New Upload", new_upload_path %></h3>
+
+<h2>All Uploads</h2>
+<table>
+<!--    <thead>.
+      <tr>
+         <th>File </th>
+      </tr>
+      <tr>
+      </tr>
+   </thead> -->
+   
+   <tbody>
+      <% @uploads.reverse.each do |upload| %>
+         <tr>
+            <td>
+            	<a href="/uploads/<%= upload.id %>">
+					<%= upload.title %>
+				</a>
+			</td>
+			<td style="padding-left: 10px">
+				<a href="/process/<%= upload.id %>">process</a>
+			</td>
+         <td style="padding-left: 30px">
+            <%= link_to "delete", upload_path(upload),
+                  method: :delete,
+                  data: { confirm: "Are you sure?" } %>
+         </td>
+         </tr>
+      <% end %>
+   </tbody>
+</table>
+
+

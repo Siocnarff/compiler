@@ -1,0 +1,40 @@
+<h1>New Upload</h1>
+<%= form_with model: @upload do |form| %>
+  <div id="titles">
+    <%= form.label :title %>
+    <%= form.text_field :title %>
+    <input type="file" id="input">
+    <% @upload.errors.full_messages_for(:title).each do |message| %>
+      <div><%= message %></div>
+    <% end %>
+  </div>
+  <div style="display:none" id="data">
+    <%= form.text_area :body %>    
+  </div>
+
+  <div style="padding: 10px">
+    <% @upload.errors.full_messages_for(:body).each do |message| %>
+      <div><%= message %></div>
+    <% end %>
+    <%= form.submit %>
+  </div>
+<% end %>
+
+<script type="text/javascript">
+  const fileTitleElement = document.getElementById("upload_title")
+  const fileDataElement = document.getElementById("upload_body")
+  const inputElement = document.getElementById("input");
+  inputElement.addEventListener("change", handleFiles, false);
+  function handleFiles() {
+    var file = this.files[0]
+    var fr = new FileReader();
+    fr.onload=function(){
+        fileDataElement.textContent = fr.result
+    }
+    fr.readAsText(file)
+    console.log(file.name)
+    console.log(fileTitleElement)
+    console.log(fileDataElement)
+    fileTitleElement.textContent = file.name
+  }
+</script>
