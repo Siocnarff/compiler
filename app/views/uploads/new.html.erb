@@ -9,15 +9,17 @@
       <div><%= message %></div>
     <% end %>
   </div>
-  <div style="display:none" id="data">
-    <%= form.text_area :body %>    
-  </div>
 
   <div style="padding: 10px">
     <% @upload.errors.full_messages_for(:body).each do |message| %>
       <div><%= message %></div>
     <% end %>
     <%= form.submit %>
+  </div>
+
+  <div style="padding-top: 100px" id="data">
+    <p>Optionally input your SPL code below:</p>
+    <%= form.text_area :body %>    
   </div>
 <% end %>
 
