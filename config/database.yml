@@ -24,8 +24,8 @@ default: &default
 development:
   <<: *default
   database: lexer_online_development
-  username: siocnarff
-  password: Islamic0 Vitamins Recoil Tinker
+  username: josuabotha
+  password: Panther.Unseen0.Cubbyhole.Venture
 
   # The specified database role being used to connect to postgres.
   # To create additional roles in postgres see `$ createuser --help`.
