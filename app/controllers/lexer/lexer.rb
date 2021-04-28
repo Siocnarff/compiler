@@ -1,7 +1,9 @@
-require 'autmaton-classes.rb'
+require 'lexer/automatonclasses.rb'
 
 def lex_do(file_data)
+  lexprintout = Array.new
   lexed = Array.new
+
 
   dfa = DFA.new(
     YAML.load_file("#{Rails.root}/public/automata/dfa.yml")
@@ -20,7 +22,8 @@ def lex_do(file_data)
     begin
       info = dfa.eat(k)
       if info
-        lexed.push("#{count} #{info[0]} #{info[1]}")
+        lexed.push(info)
+        lexprintout.push("#{count} #{info[0]} #{info[1]}")
         dfa.reset
         if dfa.data_in_buffer?
           dfa.eat(dfa.buffer)
@@ -42,13 +45,13 @@ def lex_do(file_data)
       else
         m = "#{e}"
       end
-      lexed.push("")
-      lexed.push("Lexical Error: #{dfa.token + k}")
-      lexed.push("#{m}.")
-      lexed.push("#{line_count}: #{error_location_text}")
-      lexed.push("Scanning Aborted.")
-      break
+      lexprintout.push("")
+      lexprintout.push("Lexical Error: #{dfa.token + k}")
+      lexprintout.push("#{m}.")
+      lexprintout.push("#{line_count}: #{error_location_text}")
+      lexprintout.push("Scanning Aborted.")
+      return [false, lexprintout, lexed]
     end
   end
-  return lexed
+  return [true, lexprintout, lexed]
 end
