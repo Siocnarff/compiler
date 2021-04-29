@@ -18,6 +18,10 @@ class Token
     @nt.reverse!
   end
 
+  def nts
+    return @nt[1,@nt.length-1]
+  end
+
   def [](x)
     return @nt[x]
   end
@@ -44,6 +48,7 @@ class Token
         ids.push(nt.id)
       end
     end
+    return ids
   end
 
   def print
@@ -65,6 +70,23 @@ class Token
 
   def printMini
     return " me (id:#{@id}, name:#{@name})"
+  end
+
+  def printTree
+    c_ids = ""
+    pointersToChildren.each do |child|
+      c_ids += " #{child}"
+    end
+    a = "  | #{@name} [#{@id}]"
+    b = "  | (#{c_ids} )"
+    if a.length > b.length
+      counter = a.length - b.length
+      b += " "*counter
+    else
+      counter = b.length - a.length
+      a += " "*counter
+    end
+    return a + " |  \n" + b + " |  "
   end
 end
 

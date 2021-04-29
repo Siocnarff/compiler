@@ -22,9 +22,14 @@ class ProcessController < ApplicationController
 		else
 			@output.push("SYNTAX ERROR")
 		end
-		
-		parse_info[1].each do |line|
-			@output.push(line.print)
-		end
+		@output.push(
+			"notes on tree notation:" +
+			"\n\t[] contains node id while () contains pointers to children"+
+			"\n\tpointers and ids are the same thing, i.e. id is pointer to position in table"
+		)
+		# parse_info[1].each do |line|
+		# 	@output.push(line.printTree)
+		# end
+		@tree = parse_info[2]
 	end
 end

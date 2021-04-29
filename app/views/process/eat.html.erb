@@ -1,5 +1,15 @@
-<div>
+<div style="min_width: 100%">
 	<% @output.each do |row|%>
 		<pre><%= row %></pre>
+	<% end %>
+</div>
+<div style="min-width: 100%">
+	<% @tree.each do |r|%>
+	<div style="clear:both;"></div>
+	<div>
+		<% r.each do |c|%>
+			<div style="float: left"><pre><%= c %></pre></div>
+		<% end %>
+	</div>
 	<% end %>
 </div>

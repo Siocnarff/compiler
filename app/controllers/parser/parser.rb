@@ -82,7 +82,7 @@ def parse(token_list)
       ) # push tree to backlog
     end
   end
-  return [success, tokenGenerator.getTokens]
+  return [success, tokenGenerator.getTokens, tokenGenerator.buildTree]
 end
 
 def addToTrace(stack)

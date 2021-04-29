@@ -82,4 +82,24 @@ class TokenGenerator
     end
     return tokens
   end
+
+  def buildTree
+    root = @tokens.last
+    tree = Array.new
+    buildTreeRecursive(root, tree, 0)
+    return tree
+  end
+
+  def buildTreeRecursive(node, tree, counter)
+    if tree.length <= counter
+      tree.push(Array.new)
+    end
+    tree[counter].push(node.printTree)
+    if node.nts.nil?
+      return
+    end
+    node.nts.each do |child|
+      buildTreeRecursive(child, tree, counter + 1)
+    end
+  end
 end
