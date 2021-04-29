@@ -7,6 +7,9 @@ class ProcessController < ApplicationController
 		file_data = Upload.find(params[:id]).body
 		lexresp = lex_do(file_data)
 		@output = Array.new
+		@tree = Array.new
+		@tree.push(Array.new)
+		@table = Array.new
 		if not lexresp[0] # if lexing was not successful
 			@output += ["LEXING FAILED"]
 			@output += lexresp[1]
