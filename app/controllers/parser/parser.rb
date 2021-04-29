@@ -12,6 +12,8 @@ def parse(token_list)
   backlog = Array.new
   inbacklog = false
   success = false
+  no_change = true
+  error_message = "no errors"
   stack.push(0)
   i = 0
   while true
@@ -44,6 +46,7 @@ def parse(token_list)
     # puts "STATE After #{next_state}"
 
     if not next_state.eql? "REDUCE"
+      no_change = false
       if inbacklog
         stack.push(backlog.pop)
       else
@@ -54,6 +57,7 @@ def parse(token_list)
         i = i + 1
       end
     elsif not productions.length == 0
+      no_change = false
       if productions[1].eql? token_list[i][1]
         production_number = productions[2]
         # specific token has different production
@@ -80,9 +84,18 @@ def parse(token_list)
       backlog.push(
         tokenGenerator.generate(production_number.to_i, reduceSteps[1], rhs)
       ) # push tree to backlog
+    else
+      if no_change
+        if not i < token_list.length  - 1
+          success = true
+        end
+        error_message = "tokens left to read #{token_list.length - i} #{token_list.length} #{i}"
+        break
+      end
+      no_change = true
     end
   end
-  return [success, tokenGenerator.getTokens, tokenGenerator.buildTree]
+  return [success, tokenGenerator.getTokens, tokenGenerator.buildTree, error_message]
 end
 
 def addToTrace(stack)
