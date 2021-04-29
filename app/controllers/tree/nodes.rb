@@ -1,8 +1,6 @@
 class Token
-  @@count = 0
-  def initialize(lhs, rhs)
-    @id = @@count
-    @@count += 1
+  def initialize(lhs, rhs, id)
+    @id = id
     special_tokens = ["String", "UserDefinedName"]
     @name = self.class.inspect
     @nt = Array.new

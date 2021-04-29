@@ -5,11 +5,11 @@
 </div>
 <div style="min-width: 100%">
 	<% @tree.each do |r|%>
-	<div style="clear:both;"></div>
 	<div>
 		<% r.each do |c|%>
 			<div style="float: left"><pre><%= c %></pre></div>
 		<% end %>
 	</div>
+	<div style="clear:both; border: 1px solid;"></div>
 	<% end %>
 </div>

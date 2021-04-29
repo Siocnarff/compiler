@@ -25,7 +25,8 @@ class ProcessController < ApplicationController
 		@output.push(
 			"notes on tree notation:" +
 			"\n\t[] contains node id while () contains pointers to children"+
-			"\n\tpointers and ids are the same thing, i.e. id is pointer to position in table"
+			"\n\tpointers and ids are the same thing, i.e. id is pointer to position in table" +
+			"\n\tsolid lines are used to indicate diferent levels in the tree"
 		)
 		# parse_info[1].each do |line|
 		# 	@output.push(line.printTree)
