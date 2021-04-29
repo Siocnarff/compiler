@@ -86,9 +86,6 @@ def parse(token_list)
       ) # push tree to backlog
     else
       if no_change
-        if not i < token_list.length  - 1
-          success = true
-        end
         error_message = "tokens left to read #{token_list.length - i} #{token_list.length} #{i}"
         break
       end
