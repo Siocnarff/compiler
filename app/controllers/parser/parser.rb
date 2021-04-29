@@ -13,7 +13,7 @@ def parse(token_list)
   inbacklog = false
   success = false
   no_change = true
-  error_message = "no errors"
+  error_message = "_"
   stack.push(0)
   i = 0
   while true
