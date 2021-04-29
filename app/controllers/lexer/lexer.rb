@@ -13,6 +13,9 @@ def lex_do(file_data)
   count = 1
   line_count = 1
   file_data.split('').push(' ').each do |k|
+    if k.ord == 9
+      k = ' '
+    end
     if k.ord == 13 or k.ord == 10
       line_count += 1
       error_location_text = ''
@@ -41,7 +44,7 @@ def lex_do(file_data)
         char = k
       end
       if e.is_a?(TypeError)
-        m = "#{char} is an illegal character here"
+        m = "#{char} (#{char.ord}) is an illegal character here"
       else
         m = "#{e}"
       end

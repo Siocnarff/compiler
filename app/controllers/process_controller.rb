@@ -24,13 +24,14 @@ class ProcessController < ApplicationController
 			@output.push("PARSING SUCCESSFULL")
 		else
 			@output.push("SYNTAX ERROR")
+			@output.push(parse_info[3])
 			return
 		end
 		@output.push(
 			"notes on tree notation:" +
-			"\n\t{} contains node id\n\t() contains pointers to children\n\t[] holds the nonterminals owned by the node"+
+			"\n\t{} contains node id\n\t() contains pointers to children\n\t[] holds the variable nonterminals owned by the node"+
 			"\n\tpointers and ids are the same thing, i.e. id is pointer to position in table" +
-			"\n\tsolid lines are used to indicate diferent levels in the tree\n\tstring printed above each node is the scope of that node"
+			"\n\tsolid lines are used to indicate different levels in the tree\n\tstring printed above each node is the scope of that node"
 		)
 		@output.push(
 			"notes on pruning:"+
