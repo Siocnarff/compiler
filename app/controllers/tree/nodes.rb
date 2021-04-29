@@ -17,6 +17,14 @@ class Token
     @nt.reverse!
   end
 
+  def terminals
+    terminals = Array.new
+    @t.each do |t|
+      terminals.push(t[1])
+    end
+    return terminals
+  end
+
   def scope
     return @scope
   end
@@ -88,16 +96,27 @@ class Token
     pointersToChildren.each do |child|
       c_ids += " #{child}"
     end
-    a = "  | #{@name} [#{@id}] s:#{@scope}"
-    b = "  | (#{c_ids} )"
-    if a.length > b.length
+
+    a = "  | {#{@id}} #{@name}"
+    b = "  | (#{c_ids}  )"
+    c = "  | #{self.terminals.inspect}"
+    if a.length >= b.length and a.length >= c.length
       counter = a.length - b.length
       b += " "*counter
-    else
+      counter = a.length - c.length
+      c += " "*counter
+    elsif b.length >= a.length and b.length >= c.length
       counter = b.length - a.length
       a += " "*counter
+      counter = b.length - c.length
+      c += " "*counter
+    else
+      counter = c.length - a.length
+      a += " "*counter
+      counter = c.length - b.length
+      b += " "*counter
     end
-    return a + " |  \n" + b + " |  "
+    return " #{@scope}\n" + a + " |  \n" + b + " |  \n" + c + " |"
   end
 end
 

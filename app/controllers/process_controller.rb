@@ -28,18 +28,16 @@ class ProcessController < ApplicationController
 		end
 		@output.push(
 			"notes on tree notation:" +
-			"\n\t[] contains node id while () contains pointers to children"+
+			"\n\t{} contains node id\n\t() contains pointers to children\n\t[] holds the nonterminals owned by the node"+
 			"\n\tpointers and ids are the same thing, i.e. id is pointer to position in table" +
-			"\n\tsolid lines are used to indicate diferent levels in the tree"
+			"\n\tsolid lines are used to indicate diferent levels in the tree\n\tstring printed above each node is the scope of that node"
 		)
 		@output.push(
 			"notes on pruning:"+
 			"\n\tmy pruning software is ruthless, anything that is unchanging is pruned away"+
 			"\n\timportant information is not lost, because a special class is genereated that implicitly stores this fixed data"+
 			"\n\tfor example: a for loop can be reduced to the ForLoop class with 5 Vars and a Code node as children"+
-			"\n\tbecause these are stored in the ForLoop class, we 'know where to put them amongst the constant terminals' for all future operations"+
-			"\n\tTERMINALS ARE NEVER NODES IN THE TREE. They are always special children of the NONTERMINAL NODES"+
-			"\n\tLook in the table to see that the terminals are stored with the correct nonterminal nodes"
+			"\n\tbecause these are stored in the ForLoop class, we 'know where to put them amongst the constant terminals' for all future operations"
 		)
 		@tree = parse_info[2]
 		@table = Array.new
