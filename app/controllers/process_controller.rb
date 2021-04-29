@@ -21,6 +21,7 @@ class ProcessController < ApplicationController
 			@output.push("PARSING SUCCESSFULL")
 		else
 			@output.push("SYNTAX ERROR")
+			return
 		end
 		@output.push(
 			"notes on tree notation:" +
