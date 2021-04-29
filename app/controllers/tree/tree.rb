@@ -2,6 +2,8 @@ require 'tree/nodes.rb'
 
 class TokenGenerator
   def initialize
+    @tree = Array.new
+    @scopeSource = 0
     @idSource = -1
     @tokens = Array.new
   end
@@ -84,23 +86,31 @@ class TokenGenerator
     return tokens
   end
 
-  def buildTree
-    root = @tokens.last
-    tree = Array.new
-    buildTreeRecursive(root, tree, 0)
-    return tree
+  def getTree
+    return @tree
   end
 
-  def buildTreeRecursive(node, tree, counter)
+  def buildTree
+    root = @tokens.last
+    @tree = Array.new
+    buildTreeRecursive(root, @tree, 0, "0")
+    return @tree
+  end
+
+  def buildTreeRecursive(node, tree, counter, scope)
     if tree.length <= counter
       tree.push(Array.new)
     end
+    if node.is_a?(ForLoop) or node.is_a?(Procc)
+      scope = "#{scope}.#{@scopeSource += 1}"
+    end
+    node.setScope(scope)
     tree[counter].push(node.printTree)
     if node.nts.nil?
       return
     end
     node.nts.each do |child|
-      buildTreeRecursive(child, tree, counter + 1)
+      buildTreeRecursive(child, tree, counter + 1, scope)
     end
   end
 end

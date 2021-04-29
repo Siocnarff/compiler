@@ -1,5 +1,6 @@
 class Token
   def initialize(lhs, rhs, id)
+    @scope = "0"
     @id = id
     special_tokens = ["String", "UserDefinedName"]
     @name = self.class.inspect
@@ -14,6 +15,14 @@ class Token
     end
     @nt.push(lhs[0])
     @nt.reverse!
+  end
+
+  def scope
+    return @scope
+  end
+
+  def setScope(s)
+    @scope = s
   end
 
   def nts
@@ -70,12 +79,16 @@ class Token
     return " me (id:#{@id}, name:#{@name})"
   end
 
+  def printTable
+    return "#{@id} #{@name}\nterminal children:#{@t.inspect}\nscope: #{@scope}"
+  end
+
   def printTree
     c_ids = ""
     pointersToChildren.each do |child|
       c_ids += " #{child}"
     end
-    a = "  | #{@name} [#{@id}]"
+    a = "  | #{@name} [#{@id}] s:#{@scope}"
     b = "  | (#{c_ids} )"
     if a.length > b.length
       counter = a.length - b.length

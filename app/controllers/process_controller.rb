@@ -34,12 +34,13 @@ class ProcessController < ApplicationController
 			"\n\timportant information is not lost, because a special class is genereated that implicitly stores this fixed data"+
 			"\n\tfor example: a for loop can be reduced to the ForLoop class with 5 Vars and a Code node as children"+
 			"\n\tbecause these are stored in the ForLoop class, we 'know where to put them amongst the constant terminals' for all future operations"+
-			"\n\tTERMINALS ARE NEVER NODES. They are always special children of the NONTERMINAL NODES."+
+			"\n\tTERMINALS ARE NEVER NODES. They are always special children of the NONTERMINAL NODES"+
 			"\n\tLook in the table to see that the terminals are stored with the correct nonterminal nodes"
 		)
-		# parse_info[1].each do |line|
-		# 	@output.push(line.printTree)
-		# end
 		@tree = parse_info[2]
+		@table = Array.new
+		parse_info[1].each do |line|
+			@table.push(line.printTable)
+		end
 	end
 end
