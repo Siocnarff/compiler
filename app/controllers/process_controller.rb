@@ -40,8 +40,9 @@ class ProcessController < ApplicationController
 			"\n\n\tFor example: A for loop can be reduced to the ForLoop class with 5 Vars and a Code node as children"+
 			"\n\tbecause these are stored in the ForLoop class, we 'know where to put them amongst the constant terminals' for all future operations"+
 			"\n\n\tFurthemore, long 'lines' of single nonterminals are also drawn into each other in the cases where such chains are perfectly predictable"+
-			"\n\tAs an example, note that Code nodes can have as a direct child the ForLoop node. Implicitly there is always an INSTR node and a COND_LOOP between these but they need not be represented, as"+
-			"\n\twe know they are always there, and this knowledge is stored in the ForLoop node. This allows us to have neat flat Code nodes that each contain all their specific Instr nodes (like ForLoop) as their direct children"
+			"\n\tAs an example, note that Code nodes can have as a direct child the ForLoop node. Implicitly there is always an INSTR node and a COND_LOOP"+
+			"\n\tbetween these but they need not be represented, as we know they are always there, and this knowledge is stored in the ForLoop node."+
+			"\n\tThis allows us to have neat flat Code nodes that each contain all their specific Instr nodes (like ForLoop) as their direct children"
 		)
 		@tree = parse_info[2]
 		@table = Array.new
