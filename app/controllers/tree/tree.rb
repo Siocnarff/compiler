@@ -98,6 +98,9 @@ class TokenGenerator
   end
 
   def buildTreeRecursive(node, tree, counter, scope)
+    if node.nil?
+      return
+    end
     if tree.length <= counter
       tree.push(Array.new)
     end
