@@ -47,7 +47,11 @@ private
   def findDestinationColumn(food)
     index = 0
     @matrix[0].each do | transition |
-      if transition.eql? food[0] or transition.eql? food[1]
+      if @s == 38 and food[1].eql "0"
+        return 39
+      elsif @s == 47 and food[1].eql "1"
+        return 40
+      elsif transition.eql? food[0] or transition.eql? food[1]
         return index
       end
       index = index + 1
