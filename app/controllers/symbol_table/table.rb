@@ -27,9 +27,24 @@ class SymbolTable
     @table_entries = @table_entries[0,@scope.pop.start_pos]
   end
 
-  def getOrGenerateInternalName(name, is_var, is_for_counter)
+  def getOrGenerateVarName(name, is_counter_init = false)
+    return getOrGenerateInternalName(name, is_var = true, is_counter_init)
+  end
+
+  def getOrGenerateProcName(name)
+    return getOrGenerateInternalName(
+      name,
+      is_var = false,
+      is_counter_init = false
+    )
+  end
+
+
+private
+
+  def getOrGenerateInternalName(name, is_var, is_counter_init)
     scope_string = self.generateScopeString
-    @table_entries.each do |entry|
+    @table_entries.reverse.each do |entry|
       if entry.user_defined_name.eql? name
         if entry.is_var?
           raise "error: \"#{name}\" already defines a variable, "+
@@ -38,10 +53,8 @@ class SymbolTable
           raise "error: \"#{name}\" already defines a procedure, " +
           "cannot also define a variable" if is_var
         end
-        unless is_for_counter
+        unless is_counter_init
           return entry.internal_name
-        else
-          return entry.internal_name if entry.scope.eql? scope_string
         end
       end
     end
@@ -49,16 +62,12 @@ class SymbolTable
       TableEntry.new(
         name = name,
         internal_name = generateInternalName(name, is_var),
-        is_for_counter = is_for_counter,
         is_var = is_var,
         scope_string = scope_string
       )
     )
     @table_entries.last.internal_name
   end
-
-
-private
 
   def generateScopeString
     scope_string = ""
@@ -92,11 +101,10 @@ class ScopeInfo
 end
 
 class TableEntry
-  def initialize(name, internal_name, is_for_counter, is_var, scope_string)
+  def initialize(name, internal_name, is_var, scope_string)
     @scope_string
     @user_defined_name = name
     @internal_name = internal_name
-    @is_for_counter = is_for_counter
     @is_var = is_var
     @scope = scope_string
   end
@@ -107,10 +115,6 @@ class TableEntry
 
   def user_defined_name
     @user_defined_name
-  end
-
-  def is_for_counter
-    @is_for_counter
   end
 
   def is_var?
