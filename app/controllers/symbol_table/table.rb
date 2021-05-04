@@ -2,7 +2,8 @@ class SymbolTable
   def initialize
     @table_entries = Array.new
     @current_scope_depth = 0
-    @scope = Array.new(
+    @scope = Array.new
+    @scope.push(
       ScopeInfo.new(
         id = 0,
         start_pos = 0
@@ -23,31 +24,37 @@ class SymbolTable
   end
 
   def close_scope
-    @table_entries = @table_entries[0, @scope.pop.start_pos]
+    @table_entries = @table_entries[0,@scope.pop.start_pos]
   end
 
   def getOrGenerateInternalName(name, is_var, is_for_counter)
     scope_string = self.generateScopeString
     @table_entries.each do |entry|
-      if entry.name.eql? name and not entry.scope.eql? scope_string
+      if entry.user_defined_name.eql? name
         if entry.is_var?
-          raise "error: #{name} already defines a variable" unless is_var
+          raise "error: \"#{name}\" already defines a variable, "+
+          "cannot also define a procedure" unless is_var
         else
-          raise "error: #{name} already defines a procedure" if is_var
+          raise "error: \"#{name}\" already defines a procedure, " +
+          "cannot also define a variable" if is_var
         end
-        return entry.internal_name
+        unless is_for_counter
+          return entry.internal_name
+        else
+          return entry.internal_name if entry.scope.eql? scope_string
+        end
       end
     end
     @table_entries.push(
       TableEntry.new(
         name = name,
-        internal_name = generateInternalName(name, is_var, is_for_counter),
+        internal_name = generateInternalName(name, is_var),
         is_for_counter = is_for_counter,
         is_var = is_var,
         scope_string = scope_string
       )
     )
-    @table_entries.last
+    @table_entries.last.internal_name
   end
 
 
@@ -90,7 +97,7 @@ class TableEntry
     @user_defined_name = name
     @internal_name = internal_name
     @is_for_counter = is_for_counter
-    @var = var
+    @is_var = is_var
     @scope = scope_string
   end
 
@@ -107,7 +114,7 @@ class TableEntry
   end
 
   def is_var?
-    @var
+    @is_var
   end
 
   def scope
