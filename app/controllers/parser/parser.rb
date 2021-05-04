@@ -3,7 +3,7 @@ require 'parser/reducer.rb'
 require 'tree/tree.rb'
 
 def parse(token_list)
-  token_list.push(["$", "$"])
+  token_list.push(%w[$ $])
   tokenGenerator = TokenGenerator.new
   mapReader = MapReader.new("#{Rails.root}/public/parserfiles/data.txt")
   reducer = Reducer.new("#{Rails.root}/public/parserfiles/productions.txt")
@@ -21,10 +21,10 @@ def parse(token_list)
     inbacklog = false
     # parsetrace.push(addToTrace(stack))
     # puts addToTrace(stack)
-    productions = mapReader.getProductions()
+    productions = mapReader.getProductions
     if backlog.length > 0
       inbacklog = true
-      next_state = mapReader.nextState(backlog.last())
+      next_state = mapReader.nextState(backlog.last)
     else
       next_state = mapReader.nextState(token_list[i])
     end
@@ -38,7 +38,7 @@ def parse(token_list)
         next_state = 11
       end
     elsif next_state.eql? "DONE"
-      if not i < token_list.length - 1
+      unless i < token_list.length - 1
         success = true
       end
       break
@@ -53,7 +53,7 @@ def parse(token_list)
         stack.push(token_list[i])
       end
       stack.push(next_state)
-      if not inbacklog
+      unless inbacklog
         i = i + 1
       end
     elsif not productions.length == 0
@@ -78,7 +78,7 @@ def parse(token_list)
           break
         end
       }
-      mapReader.go(stack.last().to_i) # reset DFA
+      mapReader.go(stack.last.to_i) # reset DFA
       # we have just popped the righthand of our production from the stack
       # send NT to backlog to be procecced next round
       backlog.push(
@@ -92,13 +92,13 @@ def parse(token_list)
       no_change = true
     end
   end
-  return [success, tokenGenerator.getTokens, tokenGenerator.buildTree, error_message]
+  [success, tokenGenerator.getTokens, tokenGenerator.buildTree, error_message]
 end
 
 def addToTrace(stack)
   stacktrace = ""
   stack.each do |item|
-    if not item.is_a?(Integer)
+    unless item.is_a?(Integer)
       if not item.is_a?(Token)
         if item[1].nil?
           stacktrace = "#{stacktrace} #{item[0]}"
@@ -110,5 +110,5 @@ def addToTrace(stack)
       end
     end
   end
-  return stacktrace
+  stacktrace
 end
