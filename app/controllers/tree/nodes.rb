@@ -2,7 +2,7 @@ class Token
   def initialize(lhs, rhs, id)
     @scope = "0"
     @id = id
-    special_tokens = ["String", "UserDefinedName"]
+    special_tokens = ["String", "UserDefinedName", "Integer"]
     @name = self.class.inspect
     @nt = Array.new
     @t = Array.new
@@ -103,7 +103,7 @@ class Token
     end
 
     a = "  | {#{@id}} #{@name}"
-    b = "  | (#{c_ids}  )"
+    b = "  | (#{c_ids} )"
     c = "  | #{self.terminals.inspect}"
     if a.length >= b.length and a.length >= c.length
       counter = a.length - b.length
