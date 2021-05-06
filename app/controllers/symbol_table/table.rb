@@ -39,6 +39,15 @@ class SymbolTable
     )
   end
 
+  def proc_exists(name)
+    @table_entries.each do |entry|
+      if (not entry.is_var?) and entry.user_defined_name.eql? name
+        return true
+      end
+    end
+    return false
+  end
+
 
 private
 

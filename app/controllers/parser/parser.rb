@@ -92,7 +92,7 @@ def parse(token_list)
       no_change = true
     end
   end
-  [success, tokenGenerator.getTokens, tokenGenerator.buildTree, error_message]
+  [success, tokenGenerator, error_message]
 end
 
 def addToTrace(stack)

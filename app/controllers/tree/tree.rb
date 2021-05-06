@@ -1,8 +1,10 @@
 require 'tree/nodes.rb'
+require 'symbol_table/table.rb'
 
 class TokenGenerator
   def initialize
     @tree = Array.new
+    @symbol_table = SymbolTable.new
     @scopeSource = 0
     @idSource = -1
     @tokens = Array.new
@@ -93,6 +95,7 @@ class TokenGenerator
   def buildTree
     root = @tokens.last
     @tree = Array.new
+    @symbol_table = SymbolTable.new
     buildTreeRecursive(root, @tree, 0, "0")
     return @tree
   end
@@ -105,15 +108,61 @@ class TokenGenerator
       tree.push(Array.new)
     end
     if node.is_a?(ForLoop) or node.is_a?(Procc)
+      @symbol_table.open_new_scope
       scope = "#{scope}.#{@scopeSource += 1}"
     end
     node.setScope(scope)
+
+
+    # P4 CODE:
+
+    # replace for loop named var with internal var
+    if node.is_a?(ForLoop)
+      name_of_dec = node.nts[0].terminals[0]
+      node.nts[0].set_terminal(
+        0,
+        [
+          "InternalName",
+          @symbol_table.getOrGenerateVarName(name_of_dec, is_counter_init = true)
+        ]
+      )
+      node.nts[1, node.nts.length - 2].each do |child|
+        n = child.terminals[0]
+        child.set_terminal(0, ["InternalName", @symbol_table.getOrGenerateVarName(n)])
+      end
+    else
+      # replace any var with
+      node.nts.each do |child|
+        if child.is_a?(Var)
+          n = child.terminals[0]
+          child.set_terminal(0, ["InternalName", @symbol_table.getOrGenerateVarName(n)])
+        elsif child.is_a?(Call)
+          n = child.terminals[0]
+          child.set_terminal(0, ["InternalName", @symbol_table.getOrGenerateProcName(n)])
+        end
+      end
+    end
+    # replace proc name with internal var name
+    if node.is_a?(Procc)
+      n = node.terminals[0]
+      unless @symbol_table.proc_exists(n)
+        node.set_terminal(0, ["Internal Name", @symbol_table.getOrGenerateProcName(n)])
+      else
+        raise "Proc with name #{n} already defined in this scope or a parent scope!"
+      end
+    end
+
+    # end P4 Code
+
     tree[counter].push(node.printTree)
     if node.nts.nil?
       return
     end
     node.nts.each do |child|
       buildTreeRecursive(child, tree, counter + 1, scope)
+    end
+    if node.is_a?(ForLoop) or node.is_a?(Procc)
+      @symbol_table.close_scope
     end
   end
 end

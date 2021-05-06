@@ -25,6 +25,11 @@ class Token
     return terminals
   end
 
+  def set_terminal(index, item)
+    @t.delete_at(index)
+    @t.insert(index, item)
+  end
+
   def scope
     return @scope
   end

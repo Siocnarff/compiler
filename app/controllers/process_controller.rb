@@ -24,7 +24,7 @@ class ProcessController < ApplicationController
 			@output.push("PARSING SUCCESSFULL")
 		else
 			@output.push("SYNTAX ERROR")
-			@output.push(parse_info[3])
+			@output.push(parse_info[2])
 			return
 		end
 		@output.push(
@@ -44,9 +44,14 @@ class ProcessController < ApplicationController
 			"\n\tbetween these but they need not be represented, as we know they are always there, and this knowledge is implicitly stored in the ForLoop node."+
 			"\n\tThis allows us to have neat flat Code nodes that each contain all their specific Instr nodes (like ForLoop) as their direct children"
 		)
-		@tree = parse_info[2]
+		begin
+			@tree = parse_info[1].buildTree
+		rescue => e
+			@output.push(e)
+			return
+		end
 		@table = Array.new
-		parse_info[1].each do |line|
+		parse_info[1].getTokens.each do |line|
 			@table.push(line.printTable)
 		end
 	end
