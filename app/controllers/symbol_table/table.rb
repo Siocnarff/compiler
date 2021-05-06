@@ -28,20 +28,26 @@ class SymbolTable
   end
 
   def getOrGenerateVarName(name, is_counter_init = false)
-    return getOrGenerateInternalName(name, is_var = true, is_counter_init)
-  end
-
-  def getOrGenerateProcName(name)
     return getOrGenerateInternalName(
       name,
-      is_var = false,
-      is_counter_init = false
+      is_var = true,
+      is_counter_init,
+      is_proc_init = false
     )
   end
 
-  def proc_exists(name)
+  def getOrGenerateProcName(name, is_proc_init = false)
+    return getOrGenerateInternalName(
+      name,
+      is_var = false,
+      is_counter_init = false,
+      is_proc_init
+    )
+  end
+
+  def proc_def_exists(name)
     @table_entries.each do |entry|
-      if (not entry.is_var?) and entry.user_defined_name.eql? name
+      if entry.is_proc_init and entry.user_defined_name.eql?
         return true
       end
     end
@@ -51,7 +57,7 @@ class SymbolTable
 
 private
 
-  def getOrGenerateInternalName(name, is_var, is_counter_init)
+  def getOrGenerateInternalName(name, is_var, is_counter_init, is_proc_init)
     scope_string = self.generateScopeString
     @table_entries.reverse.each do |entry|
       if entry.user_defined_name.eql? name
@@ -63,6 +69,7 @@ private
           "cannot also define a variable" if is_var
         end
         unless is_counter_init
+          entry.set_is_proc_init(is_proc_init)
           return entry.internal_name
         end
       end
@@ -72,6 +79,7 @@ private
         name = name,
         internal_name = generateInternalName(name, is_var),
         is_var = is_var,
+        is_proc_init = is_proc_init,
         scope_string = scope_string
       )
     )
@@ -110,11 +118,12 @@ class ScopeInfo
 end
 
 class TableEntry
-  def initialize(name, internal_name, is_var, scope_string)
+  def initialize(name, internal_name, is_var, is_proc_init, scope_string)
     @scope_string
     @user_defined_name = name
     @internal_name = internal_name
     @is_var = is_var
+    @is_proc_init = is_proc_init
     @scope = scope_string
   end
 
@@ -132,5 +141,14 @@ class TableEntry
 
   def scope
     @scope
+  end
+
+  def is_proc_init
+    return @is_proc_init
+  end
+
+
+  def set_is_proc_init(is_init)
+    @is_proc_init = is_init
   end
 end

@@ -145,7 +145,7 @@ class TokenGenerator
     # replace proc name with internal var name
     if node.is_a?(Procc)
       n = node.terminals[0]
-      unless @symbol_table.proc_exists(n)
+      unless @symbol_table.proc_def_exists(n)
         node.set_terminal(0, ["Internal Name", @symbol_table.getOrGenerateProcName(n)])
       else
         raise "Proc with name #{n} already defined in this scope or a parent scope!"
