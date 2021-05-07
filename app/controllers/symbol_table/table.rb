@@ -10,7 +10,7 @@ class SymbolTable
       )
     )
     # varibles used to genereate global unique ids
-    @var_name_id_source = 0
+    @var_name_id_source = -1
     @scope_id_source = 0
   end
 
