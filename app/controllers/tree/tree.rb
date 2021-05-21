@@ -143,6 +143,13 @@ class TokenGenerator
   end
 
   def check_for_loop_vars
+    @tokens.each do |t|
+      unless t.is_deleted?
+        if t.is_a?(ForLoop)
+          t.raise_issue_if_vars_invalid
+        end
+      end
+    end
   end
 
   def buildTree
