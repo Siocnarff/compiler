@@ -134,10 +134,27 @@ class TokenGenerator
   end
 
   def remove(id)
+    if @tokens.nil?
+      raise "all tokens deleted!"
+    end
+    if @tokens[id].nil?
+      return
+    end
     @tokens[id].mark_as_deleted
     @tokens[id].nts.each do |nt|
       unless nt.nil?
         remove(nt.id)
+      end
+    end
+    remove_from_parent(id)
+  end
+
+  def remove_from_parent(id)
+    @tokens.each do |t|
+      if (t.remove_child_with_id(id))
+        if t.has_no_children
+          remove(t.id)
+        end
       end
     end
   end

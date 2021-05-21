@@ -29,6 +29,27 @@ class Token
     end
   end
 
+  def remove_child_with_id(id)
+    if @nt.nil?
+      return false
+    end
+    filterd_children = Array.new
+    self.nts.each do |child|
+      if child.id != id
+        filterd_children.push(child)
+      end
+    end
+    if filterd_children.length == self.nts.length
+      return false
+    end
+    @nt = @nt[0,1] + filterd_children
+    return true
+  end
+
+  def has_no_children
+    @nt.length < 2
+  end
+
   def mark_as_deleted
     @deleted = true
   end
