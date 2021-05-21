@@ -96,14 +96,22 @@ class TokenGenerator
     id_source = -1
     lgr = Logger.new("#{Rails.root}/log/test.log")
     lgr.info("\n================================================================\n")
-    @tokens.each do |n|
+    @tokens.reverse.each do |n|
       has_mates = false
       must_define = true
       name = ""
       if n.is_a?(Procc)
+        lgr.info("Procc scope " + n.scope)
         @tokens.each do |ni|
+          if ni.is_a?(Call)
+            lgr.info("call scope " + ni.scope)
+            lgr.info("dist " + n.scopeID.to_s + " " + ni.scopeID.to_s)
+            lgr.info("names " +  n.terminals[0] + " " + ni.terminals[0])
+            lgr.info(ni.terminal_types[0])
+          end
           if n.terminals[0].eql? ni.terminals[0] and (n.scopeID - ni.scopeID).abs <= 1
             if ni.is_a?(Call) and ni.terminal_types[0].eql?("UserDefinedInternalName")
+              lgr.info("HERE")
               if must_define
                 must_define = false
                 has_mates = true
@@ -205,7 +213,7 @@ class TokenGenerator
       scope = "#{scope}.#{@scopeSource += 1}"
     end
     node.setScope(scope)
-    node.setScopeID(@scopeSource)
+    node.setScopeID(scope.split(".").last.to_i)
 
     # P4 CODE:
     # replace for loop named var with internal var
