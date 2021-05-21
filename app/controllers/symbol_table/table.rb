@@ -11,6 +11,7 @@ class SymbolTable
     )
     # varibles used to genereate global unique ids
     @var_name_id_source = -1
+    @proc_name_id_source = -1
     @scope_id_source = 0
   end
 
@@ -56,7 +57,6 @@ class SymbolTable
 
 
 private
-
   def getOrGenerateInternalName(name, is_var, is_counter_init, is_proc_init)
     scope_string = self.generateScopeString
     @table_entries.reverse.each do |entry|
@@ -119,7 +119,6 @@ end
 
 class TableEntry
   def initialize(name, internal_name, is_var, is_proc_init, scope_string)
-    @scope_string
     @user_defined_name = name
     @internal_name = internal_name
     @is_var = is_var

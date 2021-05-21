@@ -45,7 +45,11 @@ class ProcessController < ApplicationController
 		# 	"\n\tThis allows us to have neat flat Code nodes that each contain all their specific Instr nodes (like ForLoop) as their direct children"
 		# )
 		begin
-			@tree = parse_info[1].buildTree
+			treeManager = parse_info[1]
+			treeManager.buildTree
+			treeManager.prune_dead_procs
+			treeManager.check_for_loop_vars
+			@tree = treeManager.drawTree
 		rescue => e
 			@output.push(e)
 			return

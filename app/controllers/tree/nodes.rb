@@ -25,6 +25,14 @@ class Token
     return terminals
   end
 
+  def terminal_types
+    types = Array.new
+    @t.each do |t|
+      types.push(t[0])
+    end
+    return types
+  end
+  
   def set_terminal(index, item)
     @t.delete_at(index)
     @t.insert(index, item)

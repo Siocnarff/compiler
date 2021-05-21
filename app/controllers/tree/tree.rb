@@ -92,20 +92,65 @@ class TokenGenerator
     return @tree
   end
 
+  def prune_dead_procs
+    id_source = -1
+    lgr = Logger.new("#{Rails.root}/log/test.log")
+    lgr.info("\n================================================================\n")
+    @tokens.each do |n|
+      has_mates = false
+      must_define = true
+      name = ""
+      if n.is_a?(Procc)
+        @tokens.each do |ni|
+          if ni.is_a?(Call) and ni.terminal_types[0].eql?("UserDefinedInternalName")
+            if must_define
+              must_define = false
+              has_mates = true
+              name = "p#{id_source += 1}"
+            end
+            ni.set_terminal(0, ["InternalName", name])
+          end
+        end
+        if has_mates
+          n.set_terminal(0, ["InternalName", name])
+        end
+      end
+    end
+  end
+
+  def check_for_loop_vars
+  end
+
   def buildTree
-    root = @tokens.last
-    @tree = Array.new
     @symbol_table = SymbolTable.new
-    buildTreeRecursive(root, @tree, 0, "0")
+    buildTreeRecursive(@tokens.last, 0, "0")
+  end
+
+  def drawTree
+    @tree = Array.new
+    drawTreeRecursive(@tokens.last, @tree, 0, "0")
     return @tree
   end
 
-  def buildTreeRecursive(node, tree, counter, scope)
+  def drawTreeRecursive(node, tree, counter, scope)
     if node.nil?
       return
     end
     if tree.length <= counter
       tree.push(Array.new)
+    end
+    tree[counter].push(node.printTree)
+    if node.nts.nil?
+      return
+    end
+    node.nts.each do |child|
+      drawTreeRecursive(child, tree, counter + 1, scope)
+    end
+  end
+
+  def buildTreeRecursive(node, counter, scope)
+    if node.nil?
+      return
     end
     if node.is_a?(ForLoop) or node.is_a?(Procc)
       @symbol_table.open_new_scope
@@ -113,9 +158,7 @@ class TokenGenerator
     end
     node.setScope(scope)
 
-
     # P4 CODE:
-
     # replace for loop named var with internal var
     if node.is_a?(ForLoop)
       name_of_dec = node.nts[0].terminals[0]
@@ -138,7 +181,7 @@ class TokenGenerator
           child.set_terminal(0, ["InternalName", @symbol_table.getOrGenerateVarName(n)])
         elsif child.is_a?(Call)
           n = child.terminals[0]
-          child.set_terminal(0, ["InternalName", @symbol_table.getOrGenerateProcName(n)])
+          child.set_terminal(0, ["UserDefinedInternalName", @symbol_table.getOrGenerateProcName(n)])
         end
       end
     end
@@ -146,7 +189,7 @@ class TokenGenerator
     if node.is_a?(Procc)
       n = node.terminals[0]
       unless @symbol_table.proc_def_exists(n)
-        node.set_terminal(0, ["Internal Name", @symbol_table.getOrGenerateProcName(n)])
+        node.set_terminal(0, ["UserDefinedInternalName", @symbol_table.getOrGenerateProcName(n)])
       else
         raise "Proc with name #{n} already defined in this scope or a parent scope!"
       end
@@ -154,12 +197,11 @@ class TokenGenerator
 
     # end P4 Code
 
-    tree[counter].push(node.printTree)
     if node.nts.nil?
       return
     end
     node.nts.each do |child|
-      buildTreeRecursive(child, tree, counter + 1, scope)
+      buildTreeRecursive(child, counter + 1, scope)
     end
     if node.is_a?(ForLoop) or node.is_a?(Procc)
       @symbol_table.close_scope
