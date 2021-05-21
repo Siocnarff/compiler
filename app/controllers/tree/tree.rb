@@ -125,7 +125,7 @@ class TokenGenerator
       n = t.terminal_types[0]
       if n.eql?("UserDefinedInternalName")
         if t.is_a?(Call)
-          raise "process #{t.terminals[0]} has not been defined within distance one, so cannot be called!"
+          raise "process #{t.terminals[0]} has not been defined within scope distance of one, so cannot be called!"
         elsif t.is_a?(Procc)
           remove(t.id)
         end
