@@ -102,13 +102,15 @@ class TokenGenerator
       name = ""
       if n.is_a?(Procc)
         @tokens.each do |ni|
-          if ni.is_a?(Call) and ni.terminal_types[0].eql?("UserDefinedInternalName")
-            if must_define
-              must_define = false
-              has_mates = true
-              name = "p#{id_source += 1}"
+          if n.terminals[0].eql? ni.terminals[0]
+            if ni.is_a?(Call) and ni.terminal_types[0].eql?("UserDefinedInternalName")
+              if must_define
+                must_define = false
+                has_mates = true
+                name = "p#{id_source += 1}"
+              end
+              ni.set_terminal(0, ["InternalName", name])
             end
-            ni.set_terminal(0, ["InternalName", name])
           end
         end
         if has_mates
