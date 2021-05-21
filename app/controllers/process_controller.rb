@@ -47,6 +47,7 @@ class ProcessController < ApplicationController
 		begin
 			treeManager = parse_info[1]
 			treeManager.buildTree
+			treeManager.rename_procs
 			treeManager.prune_dead_procs
 			treeManager.check_for_loop_vars
 			@tree = treeManager.drawTree
@@ -56,7 +57,9 @@ class ProcessController < ApplicationController
 		end
 		@table = Array.new
 		parse_info[1].getTokens.each do |line|
-			@table.push(line.printTable)
+			unless line.is_deleted?
+				@table.push(line.printTable)
+			end
 		end
 	end
 end

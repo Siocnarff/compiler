@@ -92,7 +92,7 @@ class TokenGenerator
     return @tree
   end
 
-  def prune_dead_procs
+  def rename_procs
     id_source = -1
     lgr = Logger.new("#{Rails.root}/log/test.log")
     lgr.info("\n================================================================\n")
@@ -102,7 +102,7 @@ class TokenGenerator
       name = ""
       if n.is_a?(Procc)
         @tokens.each do |ni|
-          if n.terminals[0].eql? ni.terminals[0]
+          if n.terminals[0].eql? ni.terminals[0] and (n.scopeID - ni.scopeID).abs <= 1
             if ni.is_a?(Call) and ni.terminal_types[0].eql?("UserDefinedInternalName")
               if must_define
                 must_define = false
@@ -116,6 +116,28 @@ class TokenGenerator
         if has_mates
           n.set_terminal(0, ["InternalName", name])
         end
+      end
+    end
+  end
+
+  def prune_dead_procs
+    @tokens.each do |t|
+      n = t.terminal_types[0]
+      if n.eql?("UserDefinedInternalName")
+        if t.is_a?(Call)
+          raise "process #{t.terminals[0]} has not been defined within distance one, so cannot be called!"
+        elsif t.is_a?(Procc)
+          remove(t.id)
+        end
+      end
+    end
+  end
+
+  def remove(id)
+    @tokens[id].mark_as_deleted
+    @tokens[id].nts.each do |nt|
+      unless nt.nil?
+        remove(nt.id)
       end
     end
   end
@@ -135,7 +157,7 @@ class TokenGenerator
   end
 
   def drawTreeRecursive(node, tree, counter, scope)
-    if node.nil?
+    if node.nil? or node.is_deleted?
       return
     end
     if tree.length <= counter
@@ -159,6 +181,7 @@ class TokenGenerator
       scope = "#{scope}.#{@scopeSource += 1}"
     end
     node.setScope(scope)
+    node.setScopeID(@scopeSource)
 
     # P4 CODE:
     # replace for loop named var with internal var

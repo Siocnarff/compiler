@@ -1,5 +1,7 @@
 class Token
   def initialize(lhs, rhs, id)
+    @deleted = false
+    @scopeID = 0
     @scope = "0"
     @id = id
     special_tokens = ["String", "UserDefinedName", "Integer"]
@@ -17,6 +19,14 @@ class Token
     @nt.reverse!
   end
 
+  def mark_as_deleted
+    @deleted = true
+  end
+
+  def is_deleted?
+    @deleted
+  end
+
   def terminals
     terminals = Array.new
     @t.each do |t|
@@ -32,7 +42,7 @@ class Token
     end
     return types
   end
-  
+
   def set_terminal(index, item)
     @t.delete_at(index)
     @t.insert(index, item)
@@ -44,6 +54,14 @@ class Token
 
   def setScope(s)
     @scope = s
+  end
+
+  def scopeID
+    @scopeId
+  end
+
+  def setScopeID(id)
+    @scopeId = id
   end
 
   def nts
