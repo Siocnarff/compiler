@@ -19,6 +19,16 @@ class Token
     @nt.reverse!
   end
 
+  def does_not_contain_assignment(var_name)
+    if self.is_a?(Assign) and self.nts[0].terminals[0].eql? (var_name)
+      raise "for loop is modifying counter variable!"
+    else
+      self.nts.each do |nt|
+        nt.does_not_contain_assignment(var_name)
+      end
+    end
+  end
+
   def mark_as_deleted
     @deleted = true
   end
@@ -198,11 +208,12 @@ end
 class ForLoop < CondLoop #instr
   def raise_issue_if_vars_invalid
     c = self.nts
-    lgr.info(c.inspect)
     var_name = c[0].terminals[0];
     unless c[1].terminals[0].eql?(var_name) and c[3].terminals[0].eql?(var_name) and c[4].terminals[0].eql?(var_name)
-      raise "all for loop variables are not the same!"
+      raise "for loop counting variable incorrectly defined, should have the same name"
     end
+    # call on code block
+    c[5].does_not_contain_assignment(var_name)
   end
 end
 
