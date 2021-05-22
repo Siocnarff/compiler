@@ -112,9 +112,9 @@ class TokenGenerator
           ns = n.scope.split(".")
           nis= ni.scope.split(".")
           if n.terminals[0].eql? ni.terminals[0]
-            a = ns.length + 1 == ni.length and ns.last.eql?(ni[ni.length - 2])
-            b = ns.length - 1 == ni.length and ni.last.eql?(n[n.length - 2])
-            c = ns.length == ni.length and ns.last.eql?(ni.last)
+            a = ns.length + 1 == nis.length and ns.last.eql?(nis[ni.length - 2])
+            b = ns.length - 1 == nis.length and nis.last.eql?(n[n.length - 2])
+            c = ns.length == nis.length and ns.last.eql?(ni.last)
             if a or b or c
               if ni.is_a?(Call) and ni.terminal_types[0].eql?("UserDefinedInternalName")
                 lgr.info("HERE")
