@@ -111,7 +111,7 @@ class TokenGenerator
           end
           ns = n.scope.split(".")
           nis= ni.scope.split(".")
-          if n.terminals[0].eql? ni.terminals[0] and (ns.length - ni.length).abs <= 1
+          if n.terminals[0].eql? ni.terminals[0]
             a = ns.length + 1 == ni.length and ns.last.eql?(ni[ni.length - 2])
             b = ns.length - 1 == ni.length and ni.last.eql?(n[n.length - 2])
             c = ns.length == ni.length and ns.last.eql?(ni.last)
