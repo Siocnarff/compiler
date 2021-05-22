@@ -109,15 +109,22 @@ class TokenGenerator
             lgr.info("names " +  n.terminals[0] + " " + ni.terminals[0])
             lgr.info(ni.terminal_types[0])
           end
-          if n.terminals[0].eql? ni.terminals[0] and (n.scopeID - ni.scopeID).abs <= 1
-            if ni.is_a?(Call) and ni.terminal_types[0].eql?("UserDefinedInternalName")
-              lgr.info("HERE")
-              if must_define
-                must_define = false
-                has_mates = true
-                name = "p#{id_source += 1}"
+          ns = n.scope.split(".")
+          nis= ni.scope.split(".")
+          if n.terminals[0].eql? ni.terminals[0] and (ns.length - ni.length).abs <= 1
+            a = ns.length + 1 == ni.length and ns.last.eql?(ni[ni.length - 2])
+            b = ns.length - 1 == ni.length and ni.last.eql?(n[n.length - 2])
+            c = ns.length == ni.length and ns.last.eql?(ni.last)
+            if a or b or c
+              if ni.is_a?(Call) and ni.terminal_types[0].eql?("UserDefinedInternalName")
+                lgr.info("HERE")
+                if must_define
+                  must_define = false
+                  has_mates = true
+                  name = "p#{id_source += 1}"
+                end
+                ni.set_terminal(0, ["InternalName", name])
               end
-              ni.set_terminal(0, ["InternalName", name])
             end
           end
         end
