@@ -1,5 +1,6 @@
 class Token
   def initialize(lhs, rhs, id)
+    @parent = nil
     @deleted = false
     @scopeID = 0
     @scope = "0"
@@ -10,6 +11,7 @@ class Token
     @t = Array.new
     rhs.each do | token |
       if token.is_a?(Token)
+        token.add_parent(self)
         @nt.push(token)
       elsif special_tokens.include?(token[0])
         @t.push(token)
@@ -17,6 +19,10 @@ class Token
     end
     @nt.push(lhs[0])
     @nt.reverse!
+  end
+
+  def add_parent(parent)
+    @parent = parent
   end
 
   def does_not_contain_assignment(var_name)

@@ -101,23 +101,21 @@ class TokenGenerator
       must_define = true
       name = ""
       if n.is_a?(Procc)
-        lgr.info("Procc scope " + n.scope)
         @tokens.each do |ni|
-          if ni.is_a?(Call)
-            lgr.info("call scope " + ni.scope)
-            lgr.info("dist " + n.scopeID.to_s + " " + ni.scopeID.to_s)
-            lgr.info("names " +  n.terminals[0] + " " + ni.terminals[0])
-            lgr.info(ni.terminal_types[0])
-          end
           ns = n.scope.split(".")
-          nis= ni.scope.split(".")
+          nis = ni.scope.split(".")
+          if n.is_a?(Call)
+
+          end
           if n.terminals[0].eql? ni.terminals[0]
-            a = ns.length + 1 == nis.length and ns.last.eql?(nis[nis.length - 2])
-            b = ns.length - 1 == nis.length and nis.last.eql?(ns[ns.length - 2])
-            c = ns.length == nis.length and ns.last.eql?(nis.last)
-            if a or b or c
-              if ni.is_a?(Call) and ni.terminal_types[0].eql?("UserDefinedInternalName")
-                lgr.info("HERE")
+            if ni.is_a?(Call) and ni.terminal_types[0].eql?("UserDefinedInternalName")
+              lgr.info(n.terminals[0])
+              lgr.info(ns.inspect)
+              lgr.info(nis.inspect)
+              a = ns.length + 1 == nis.length and ns.last.eql?(nis[nis.length - 2])
+              b = ns.length - 1 == nis.length and nis.last.eql?(ns[ns.length - 2])
+              c = ns.length == nis.length and ns.last.eql?(nis.last)
+              if a or b or c
                 if must_define
                   must_define = false
                   has_mates = true
