@@ -21,8 +21,20 @@ class Token
     @nt.reverse!
   end
 
+  def get_parent
+    @parent
+  end
+
   def add_parent(parent)
     @parent = parent
+  end
+
+  def setProcScope(proc_scope)
+    @proc_scope = proc_scope
+  end
+
+  def getProcScope
+    @proc_scope
   end
 
   def does_not_contain_assignment(var_name)

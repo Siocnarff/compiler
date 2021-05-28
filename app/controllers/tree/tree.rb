@@ -97,37 +97,25 @@ class TokenGenerator
     lgr = Logger.new("#{Rails.root}/log/test.log")
     lgr.info("\n================================================================\n")
     @tokens.reverse.each do |n|
-      has_mates = false
-      must_define = true
       if n.is_a?(Procc)
+        has_mates = false
         new_name = "p#{id_source + 1}"
-        if has_parent_call(n, new_name) or has_child_call(n, new_name)
+        @tokens.each do |ni|
+          if ni.is_a?(Call) and n.terminal_types[0].eql?("UDIN")
+            if ni.terminals[0].eql?(n.terminals[0])
+              if abs(ni.getProcScope - n.getProcScope) <= 1
+                has_mates = true
+                ni.set_terminal(0, ["InternalName", new_name])
+              end
+            end
+          end
+        end
+        if has_mates
           n.set_terminal(0, ["InternalName", new_name])
           id_source += 1
         end
       end
     end
-  end
-
-  def has_parent_call(n, new_name)
-    old_name = n.terminals[0]
-    hpc_recursive(n.get_parent, old_name, new_name)
-  end
-
-  def hpc_recursive(n, old_name, new_name)
-    unless n.nil? or n.is_a?(Procc)
-      if n.is_a?(Call) and n.terminal_types[0].eql?("UDIN") and n.terminals[0].eql?(old_name)
-        n.set_terminal(0, ["InternalName", new_name])
-        hpc_recursive(n.get_parent, old_name, new_name)
-        return true
-      else
-        return hpc_recursive(n.get_parent, old_name, new_name)
-      end
-    end
-    return false
-  end
-
-  def has_child_call(n, new_name)
   end
 
   def prune_dead_procs
@@ -181,7 +169,7 @@ class TokenGenerator
 
   def buildTree
     @symbol_table = SymbolTable.new
-    buildTreeRecursive(@tokens.last, 0, "0")
+    buildTreeRecursive(@tokens.last, i = 0, scope_str = "0", proc_scope = 0)
   end
 
   def drawTree
@@ -206,7 +194,7 @@ class TokenGenerator
     end
   end
 
-  def buildTreeRecursive(node, counter, scope)
+  def buildTreeRecursive(node, counter, scope, proc_scope)
     if node.nil?
       return
     end
@@ -214,6 +202,12 @@ class TokenGenerator
       @symbol_table.open_new_scope
       scope = "#{scope}.#{@scopeSource += 1}"
     end
+
+    if node.is_a?(Procc)
+      proc_scope += 1
+    end
+
+    node.setProcScope(proc_scope)
     node.setScope(scope)
     node.setScopeID(scope.split(".").last.to_i)
 
@@ -260,7 +254,7 @@ class TokenGenerator
       return
     end
     node.nts.each do |child|
-      buildTreeRecursive(child, counter + 1, scope)
+      buildTreeRecursive(child, counter + 1, scope, proc_scope)
     end
     if node.is_a?(ForLoop) or node.is_a?(Procc)
       @symbol_table.close_scope
