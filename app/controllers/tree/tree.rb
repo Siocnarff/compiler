@@ -103,7 +103,11 @@ class TokenGenerator
         @tokens.each do |ni|
           if ni.is_a?(Call) and n.terminal_types[0].eql?("UDIN")
             if ni.terminals[0].eql?(n.terminals[0])
-              if (ni.getProcScope - n.getProcScope).abs() <= 1
+              distance = n.getProcScope - ni.getProcScope
+              if distance == 0 and not ni.get_parent.eql?(n)
+                raise "call #{ni.terminals[0]} not in same tree as the proc def it is referring to!"
+              end
+              if distance >= 0 and distance < 2
                 has_mates = true
                 ni.set_terminal(0, ["InternalName", new_name])
               end
@@ -123,7 +127,7 @@ class TokenGenerator
       n = t.terminal_types[0]
       if n.eql?("UDIN")
         if t.is_a?(Call)
-          raise "process #{t.terminals[0]} has not been defined within scope distance of one, so cannot be called!"
+          raise "process #{t.terminals[0]} has not been defined within proc scope distance of one, so cannot be called!"
         elsif t.is_a?(Procc)
           remove(t.id)
         end
@@ -206,7 +210,6 @@ class TokenGenerator
     if node.is_a?(Procc)
       proc_scope += 1
     end
-
     node.setProcScope(proc_scope)
     node.setScope(scope)
     node.setScopeID(scope.split(".").last.to_i)
