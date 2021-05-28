@@ -3,6 +3,7 @@ require 'symbol_table/table.rb'
 
 class TokenGenerator
   def initialize
+    @lgr = Logger.new("#{Rails.root}/log/test.log")
     @tree = Array.new
     @symbol_table = SymbolTable.new
     @scopeSource = 0
@@ -94,8 +95,7 @@ class TokenGenerator
 
   def rename_procs
     id_source = -1
-    lgr = Logger.new("#{Rails.root}/log/test.log")
-    lgr.info("\n================================================================\n")
+    @lgr.info("\n================================================================\n")
     @tokens.reverse.each do |n|
       if n.is_a?(Procc)
         has_mates = false
@@ -104,10 +104,13 @@ class TokenGenerator
           if ni.is_a?(Call) and n.terminal_types[0].eql?("UDIN")
             if ni.terminals[0].eql?(n.terminals[0])
               distance = n.getProcScope - ni.getProcScope
-              if distance == 0 and not ni.get_parent.eql?(n)
-                raise "call #{ni.terminals[0]} not in same tree as the proc def it is referring to!"
-              end
-              if distance >= 0 and distance < 2
+              # if distance == 0
+              #   unless has_ancestor(ni, n)
+              #     raise "call #{ni.terminals[0]} not in same tree as the proc def it is referring to!"
+              #   end
+              # end
+
+              if distance == 0 and has_ancestor(ni, n) or (distance > 0 and distance < 2)
                 has_mates = true
                 ni.set_terminal(0, ["InternalName", new_name])
               end
@@ -120,6 +123,18 @@ class TokenGenerator
         end
       end
     end
+  end
+
+  def has_ancestor(person, target_ancestor)
+    unless person.nil?
+      if person.get_parent.nil?
+      end
+      if person.eql?(target_ancestor)
+        return true
+      end
+      return has_ancestor(person.get_parent, target_ancestor)
+    end
+    return false
   end
 
   def prune_dead_procs
@@ -174,6 +189,14 @@ class TokenGenerator
   def buildTree
     @symbol_table = SymbolTable.new
     buildTreeRecursive(@tokens.last, i = 0, scope_str = "0", proc_scope = 0)
+    doubleLinkTree(@tokens.last)
+  end
+
+  def doubleLinkTree(node)
+    node.nts.each do |child|
+      child.add_parent(node)
+      doubleLinkTree(child)
+    end
   end
 
   def drawTree

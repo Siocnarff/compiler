@@ -11,7 +11,6 @@ class Token
     @t = Array.new
     rhs.each do | token |
       if token.is_a?(Token)
-        token.add_parent(self)
         @nt.push(token)
       elsif special_tokens.include?(token[0])
         @t.push(token)
