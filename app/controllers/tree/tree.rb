@@ -99,44 +99,41 @@ class TokenGenerator
     @tokens.reverse.each do |n|
       has_mates = false
       must_define = true
-      name = ""
       if n.is_a?(Procc)
-        @tokens.each do |ni|
-          ns = n.scope.split(".")
-          nis = ni.scope.split(".")
-          if n.is_a?(Call)
-
-          end
-          if n.terminals[0].eql? ni.terminals[0]
-            if ni.is_a?(Call) and ni.terminal_types[0].eql?("UserDefinedInternalName")
-              lgr.info(n.terminals[0])
-              lgr.info(ns.inspect)
-              lgr.info(nis.inspect)
-              a = ns.length + 1 == nis.length and ns.last.eql?(nis[nis.length - 2])
-              b = ns.length - 1 == nis.length and nis.last.eql?(ns[ns.length - 2])
-              c = ns.length == nis.length and ns.last.eql?(nis.last)
-              if a or b or c
-                if must_define
-                  must_define = false
-                  has_mates = true
-                  name = "p#{id_source += 1}"
-                end
-                ni.set_terminal(0, ["InternalName", name])
-              end
-            end
-          end
-        end
-        if has_mates
-          n.set_terminal(0, ["InternalName", name])
+        new_name = "p#{id_source + 1}"
+        if has_parent_call(n, new_name) or has_child_call(n, new_name)
+          n.set_terminal(0, ["InternalName", new_name])
+          id_source += 1
         end
       end
     end
   end
 
+  def has_parent_call(n, new_name)
+    old_name = n.terminals[0]
+    hpc_recursive(n.get_parent, old_name, new_name)
+  end
+
+  def hpc_recursive(n, old_name, new_name)
+    unless n.nil? or n.is_a?(Procc)
+      if n.is_a?(Call) and n.terminal_types[0].eql?("UDIN") and n.terminals[0].eql?(old_name)
+        n.set_terminal(0, ["InternalName", new_name])
+        hpc_recursive(n.get_parent, old_name, new_name)
+        return true
+      else
+        return hpc_recursive(n.get_parent, old_name, new_name)
+      end
+    end
+    return false
+  end
+
+  def has_child_call(n, new_name)
+  end
+
   def prune_dead_procs
     @tokens.each do |t|
       n = t.terminal_types[0]
-      if n.eql?("UserDefinedInternalName")
+      if n.eql?("UDIN")
         if t.is_a?(Call)
           raise "process #{t.terminals[0]} has not been defined within scope distance of one, so cannot be called!"
         elsif t.is_a?(Procc)
@@ -243,7 +240,7 @@ class TokenGenerator
           child.set_terminal(0, ["InternalName", @symbol_table.getOrGenerateVarName(n)])
         elsif child.is_a?(Call)
           n = child.terminals[0]
-          child.set_terminal(0, ["UserDefinedInternalName", @symbol_table.getOrGenerateProcName(n)])
+          child.set_terminal(0, ["UDIN", @symbol_table.getOrGenerateProcName(n)])
         end
       end
     end
@@ -251,7 +248,7 @@ class TokenGenerator
     if node.is_a?(Procc)
       n = node.terminals[0]
       unless @symbol_table.proc_def_exists(n)
-        node.set_terminal(0, ["UserDefinedInternalName", @symbol_table.getOrGenerateProcName(n)])
+        node.set_terminal(0, ["UDIN", @symbol_table.getOrGenerateProcName(n)])
       else
         raise "Proc with name #{n} already defined in this scope or a parent scope!"
       end
