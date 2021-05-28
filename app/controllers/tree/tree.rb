@@ -103,7 +103,7 @@ class TokenGenerator
         @tokens.each do |ni|
           if ni.is_a?(Call) and n.terminal_types[0].eql?("UDIN")
             if ni.terminals[0].eql?(n.terminals[0])
-              if abs(ni.getProcScope - n.getProcScope) <= 1
+              if (ni.getProcScope - n.getProcScope).abs() <= 1
                 has_mates = true
                 ni.set_terminal(0, ["InternalName", new_name])
               end
