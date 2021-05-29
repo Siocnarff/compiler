@@ -6,6 +6,7 @@ class TokenGenerator
     @lgr = Logger.new("#{Rails.root}/log/test.log")
     @tree = Array.new
     @symbol_table = SymbolTable.new
+    @procScopeSource = 0
     @scopeSource = 0
     @idSource = -1
     @tokens = Array.new
@@ -105,18 +106,22 @@ class TokenGenerator
 
           if call.is_a?(Call)
             if call.terminals[0].eql?(proc_name)
-              distance = proc.getProcScope - call.getProcScope
+              procFamilyLine = proc.getProcScope.split(".")
+              callFamilyLine = call.getProcScope.split(".")
+              distance = procFamilyLine.length - callFamilyLine.length
+
               may_rename = false
 
-              if distance == 0
-                if has_ancestor(call, proc)
+              if distance >= 0 and distance <= 1
+                if has_ancestor(procFamilyLine, callFamilyLine)
                   may_rename = true
+                  call.set_terminal(0, ["InternalName", new_name])
                 else
                   call.tag_in_wrong_tree
                 end
-              elsif distance > 0 and distance < 2
-                proc.tag_has_outside_call
-                may_rename = true
+                if distance != 0
+                  proc.tag_has_outside_call
+                end
               end
 
               if may_rename
@@ -135,16 +140,11 @@ class TokenGenerator
     end
   end
 
-  def has_ancestor(person, target_ancestor)
-    unless person.nil?
-      if person.get_parent.nil?
-      end
-      if person.eql?(target_ancestor)
-        return true
-      end
-      return has_ancestor(person.get_parent, target_ancestor)
+  def has_ancestor(procFT, callFT)
+    if procFT.length != callFT.length
+      procFT.pop
     end
-    return false
+    procFT.pop.eql?(callFT.last)
   end
 
   def prune_dead_procs
@@ -157,7 +157,7 @@ class TokenGenerator
           raise "'proc #{t.terminals[0]}' has not been defined within proc scope distance of one, so cannot be called here!"
         end
       ## come back to : elsif t.is_a?(Procc) and (token_not_renamed or t.has_no_outside_call?)
-      elsif t.is_a?(Procc) and (token_not_renamed)
+      elsif t.is_a?(Procc) and (token_not_renamed or t.has_no_outside_call?)
         remove(t.id)
       end
     end
@@ -201,7 +201,7 @@ class TokenGenerator
 
   def buildTree
     @symbol_table = SymbolTable.new
-    buildTreeRecursive(@tokens.last, i = 0, scope_str = "0", proc_scope = 0)
+    buildTreeRecursive(@tokens.last, i = 0, scope_str = "0", proc_scope = "0")
     doubleLinkTree(@tokens.last)
   end
 
@@ -244,11 +244,10 @@ class TokenGenerator
     end
 
     if node.is_a?(Procc)
-      proc_scope += 1
+      proc_scope = "#{proc_scope}.#{@procScopeSource += 1}"
     end
     node.setProcScope(proc_scope)
     node.setScope(scope)
-    node.setScopeID(scope.split(".").last.to_i)
 
     # P4 CODE:
     # replace for loop named var with internal var

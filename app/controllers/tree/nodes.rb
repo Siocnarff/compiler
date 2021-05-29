@@ -2,7 +2,7 @@ class Token
   def initialize(lhs, rhs, id)
     @parent = nil
     @deleted = false
-    @scopeID = 0
+    @proc_scope = "0"
     @scope = "0"
     @id = id
     special_tokens = ["String", "UserDefinedName", "Integer"]
@@ -102,14 +102,6 @@ class Token
 
   def setScope(s)
     @scope = s
-  end
-
-  def scopeID
-    @scopeId
-  end
-
-  def setScopeID(id)
-    @scopeId = id
   end
 
   def nts
