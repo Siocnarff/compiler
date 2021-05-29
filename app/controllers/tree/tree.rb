@@ -96,29 +96,39 @@ class TokenGenerator
   def rename_procs
     id_source = -1
     @lgr.info("\n================================================================\n")
-    @tokens.reverse.each do |n|
-      if n.is_a?(Procc)
+    @tokens.reverse.each do |proc|
+      if proc.is_a?(Procc) and proc.terminal_types[0].eql?("UDIN")
+        proc_name = proc.terminals[0]
         has_mates = false
         new_name = "p#{id_source + 1}"
-        @tokens.each do |ni|
-          if ni.is_a?(Call) and n.terminal_types[0].eql?("UDIN")
-            if ni.terminals[0].eql?(n.terminals[0])
-              distance = n.getProcScope - ni.getProcScope
-              # if distance == 0
-              #   unless has_ancestor(ni, n)
-              #     raise "call #{ni.terminals[0]} not in same tree as the proc def it is referring to!"
-              #   end
-              # end
+        @tokens.each do |call|
 
-              if distance == 0 and has_ancestor(ni, n) or (distance > 0 and distance < 2)
-                has_mates = true
-                ni.set_terminal(0, ["InternalName", new_name])
+          if call.is_a?(Call)
+            if call.terminals[0].eql?(proc_name)
+              distance = proc.getProcScope - call.getProcScope
+              may_rename = false
+
+              if distance == 0
+                if has_ancestor(call, proc)
+                  may_rename = true
+                else
+                  call.tag_in_wrong_tree
+                end
+              elsif distance > 0 and distance < 2
+                proc.tag_has_outside_call
+                may_rename = true
               end
+
+              if may_rename
+                has_mates = true
+                call.set_terminal(0, ["InternalName", new_name])
+              end
+
             end
           end
         end
         if has_mates
-          n.set_terminal(0, ["InternalName", new_name])
+          proc.set_terminal(0, ["InternalName", new_name])
           id_source += 1
         end
       end
@@ -139,13 +149,15 @@ class TokenGenerator
 
   def prune_dead_procs
     @tokens.each do |t|
-      n = t.terminal_types[0]
-      if n.eql?("UDIN")
-        if t.is_a?(Call)
-          raise "process #{t.terminals[0]} has not been defined within proc scope distance of one, so cannot be called!"
-        elsif t.is_a?(Procc)
-          remove(t.id)
+      token_not_renamed = t.terminal_types[0].eql?("UDIN")
+      if t.is_a?(Call) and token_not_renamed
+        if t.in_wrong_tree?
+          raise "raise 'proc #{t.terminals[0]}' does not stand in any ancestor relationship with the location it is called from!"
+        else
+          raise "'proc #{t.terminals[0]}'' has not been defined within proc scope distance of one, so cannot be called here!"
         end
+      elsif t.is_a?(Procc) and (token_not_renamed or t.has_no_outside_call?)
+        remove(t.id)
       end
     end
   end

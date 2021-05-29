@@ -209,6 +209,18 @@ class ProcDefs < Token
 end
 
 class Procc < Token
+  def initialize(lhs, rhs, id)
+    super
+    @has_outside_call = false
+  end
+
+  def tag_has_outside_call
+    @has_outside_call = true
+  end
+
+  def has_no_outside_call?
+    not @has_outside_call
+  end
 end
 
 class Instr < Token
@@ -230,6 +242,18 @@ class IOOutput < Instr
 end
 
 class Call < Instr
+  def initialize(lhs, rhs, id)
+    super
+    @in_wrong_tree_error = false
+  end
+
+  def tag_in_wrong_tree
+    @in_wrong_tree_error = true
+  end
+
+  def in_wrong_tree?
+    @in_wrong_tree_error
+  end
 end
 #UserDefinedName
 

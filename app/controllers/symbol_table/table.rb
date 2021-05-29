@@ -48,7 +48,7 @@ class SymbolTable
 
   def proc_def_exists(name)
     @table_entries.each do |entry|
-      if entry.is_proc_init and entry.user_defined_name.eql?
+      if entry.is_proc_init and entry.user_defined_name.eql? name
         return true
       end
     end
