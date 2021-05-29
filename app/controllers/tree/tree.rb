@@ -154,9 +154,10 @@ class TokenGenerator
         if t.in_wrong_tree?
           raise "raise 'proc #{t.terminals[0]}' does not stand in any ancestor relationship with the location it is called from!"
         else
-          raise "'proc #{t.terminals[0]}'' has not been defined within proc scope distance of one, so cannot be called here!"
+          raise "'proc #{t.terminals[0]}' has not been defined within proc scope distance of one, so cannot be called here!"
         end
-      elsif t.is_a?(Procc) and (token_not_renamed or t.has_no_outside_call?)
+      ## come back to : elsif t.is_a?(Procc) and (token_not_renamed or t.has_no_outside_call?)
+      elsif t.is_a?(Procc) and (token_not_renamed)
         remove(t.id)
       end
     end
