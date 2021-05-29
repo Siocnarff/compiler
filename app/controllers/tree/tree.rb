@@ -116,11 +116,11 @@ class TokenGenerator
                 if has_ancestor(procFamilyLine, callFamilyLine)
                   may_rename = true
                   call.set_terminal(0, ["InternalName", new_name])
+                  if distance != 0
+                    proc.tag_has_outside_call
+                  end
                 else
                   call.tag_in_wrong_tree
-                end
-                if distance != 0
-                  proc.tag_has_outside_call
                 end
               end
 
