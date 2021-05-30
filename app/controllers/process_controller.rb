@@ -41,6 +41,7 @@ class ProcessController < ApplicationController
 			treeManager.pruneBasedOnType
 			@tree = treeManager.drawTree
 		rescue => e
+			@output.push("\t!! DARN IT !!")
 			@output.push(e)
 			return
 		end
