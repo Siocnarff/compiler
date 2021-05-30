@@ -298,15 +298,25 @@ end
 class Assign < Instr
   def type
     var = self.nts[0]
-    target = self.nts[1]
-    if target.is_a?(Var)
-      type_var_var(var, target)
-    elsif target.is_a?(Numexpr)
-      type_var_numexpr(var, target)
-    else
+    if self.nts.length == 1
       type_var_string(var)
+    elsif self.nts[1].is_a?(Var)
+      type_var_var(var, self.nts[1])
+    elsif self.nts[1].is_a?(Numexpr)
+      type_var_numexpr(var, self.nts[1])
+    else
+
     end
     @type
+  end
+  
+  def type_var_string(var)
+    if var.get_type.eql?("n")
+      @type = "e"
+    else
+      var.set_type("s")
+      @type = "c"
+    end
   end
 
   def type_var_var(left, right)
@@ -341,15 +351,6 @@ class Assign < Instr
     end
     @type
   end
-
-  def type_var_string(var)
-    if var.get_type.eql?("n")
-      @type = "e"
-    else
-      var.set_type("s")
-      @type = "c"
-    end
-  end
 end
 # VAR, String, NUMEXPR
 
@@ -381,6 +382,17 @@ class IfThen < CondBranch #instr
 end
 
 class Numexpr < Token
+  def type
+    target = self.nts[0]
+    if target.is_a?(Var)
+      type_var_var(var, target)
+    elsif target.is_a?(Calc)
+      type_var_calc(var, target)
+    else
+      type_var_integer(var)
+    end
+    @type
+  end
 end
 # VAR, Integer, CALC
 
