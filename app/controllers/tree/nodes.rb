@@ -299,17 +299,15 @@ class Assign < Instr
   def type
     var = self.nts[0]
     if self.nts.length == 1
-      type_var_string(var)
+      self.type_var_string(var)
     elsif self.nts[1].is_a?(Var)
-      type_var_var(var, self.nts[1])
+      self.type_var_var(var, self.nts[1])
     elsif self.nts[1].is_a?(Numexpr)
-      type_var_numexpr(var, self.nts[1])
-    else
-
+      self.type_var_numexpr(var, self.nts[1])
     end
     @type
   end
-  
+
   def type_var_string(var)
     if var.get_type.eql?("n")
       @type = "e"
@@ -383,15 +381,18 @@ end
 
 class Numexpr < Token
   def type
-    target = self.nts[0]
-    if target.is_a?(Var)
-      type_var_var(var, target)
-    elsif target.is_a?(Calc)
-      type_var_calc(var, target)
-    else
-      type_var_integer(var)
+    if self.nts.length == 0
+      self.type_integer
+    elsif self.nts[0].is_a?(Var)
+      self.type_var(self.nts[0])
+    elsif self.nts[0].is_a?(Calc)
+      self.type_calc(self.nts[0])
     end
     @type
+  end
+
+  def type_integer
+    @type = "n"
   end
 end
 # VAR, Integer, CALC
