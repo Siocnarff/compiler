@@ -380,6 +380,24 @@ class ForLoop < CondLoop #instr
     # call on code block
     c[5].does_not_contain_assignment(var_name)
   end
+
+  def type
+    vars = self.nts
+    code = children.pop()
+    vars.each do |var|
+      if var.type.eql?("s")
+        @type = "e"
+        return
+      end
+    end
+    if code.type.eql?("c")
+      @type = "c"
+      vars.each do |var|
+        var.set_type("n")
+      end
+    end
+    @type
+  end
 end
 
 class CondBranch < Token
