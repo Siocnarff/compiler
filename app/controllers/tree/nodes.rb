@@ -394,10 +394,33 @@ class Numexpr < Token
   def type_integer
     @type = "n"
   end
+
+  def type_var(var)
+    if var.type.eql?("s")
+      @type = "e"
+    else
+      var.set_type("n")
+      @type = "n"
+    end
+  end
+
+  def type_calc(calc)
+    if calc.type.eql?("n")
+      @type = "n"
+    end
+  end
 end
 # VAR, Integer, CALC
 
 class Calc < Token
+  def type
+    left  = self.nts[0]
+    right = self.nts[1]
+    if left.type.eql?("n") and right.type.eql?("n")
+      @type = "n"
+    end
+    @type
+  end
 end
 
 class AddCalc < Calc
