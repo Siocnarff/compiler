@@ -49,19 +49,18 @@ class Token
 
   def prune_based_on_type
     # "child functions" have to call super first to ensure
-    # that the "d" cases are propegeted upwards correctly
-    
+    # that the "d" cases are propageted upwards correctly
     children = self.nts
     children.each do |child|
       child.prune_based_on_type
     end
     # now each child will be "d" if it ever will be
-
-    all_alive = true # vacuously true if I have no children
+    all_alive = true
+    # all_alive vacuously true if I have no children
     children.each do |child|
       all_alive = all_alive and not child.type.eql?("d")
     end
-    # if all children are "d" I should also be
+    # if all children are "d" I should also be dead
     unless all_alive
       @type = "d"
     end
