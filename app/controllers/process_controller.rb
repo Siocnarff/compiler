@@ -28,22 +28,12 @@ class ProcessController < ApplicationController
 			return
 		end
 		@output.push(
-			"Notes on tree notation:" +
-			"\n\t{} contains node id\n\t() contains pointers to children\n\t[] holds the variable terminals owned by the node IN HERE INTERNAL VARIABLE NAMES WILL BE SHOWN - SEE TABLE FOR MORE DETAILS"+
-			"\n\tPointers and ids are the same thing, i.e. id is pointer to position in table" +
-			"\n\tSolid lines are used to indicate different levels in the tree\n\tThe string printed above each node is the scope of that node"
+			"Notes on notation:" +
+			"\n\ttype of node is shown as a single character above each node (and scope is shown just below this)" +
+			"\n\t for Procc and Var nodes the square brackets are used like this: [<InternalName>, <UserDefinedName>] for ease of marking" +
+			"\n\n\t{} contains node id\n\t() contains pointers to children\n\t[] holds the variable terminals owned by the node"+
+			"\n\tSolid lines are used to indicate different levels in the tree"
 		)
-		# @output.push(
-		# 	"Notes on pruning:"+
-		# 	"\n\tMy pruning software is ruthless, anything that is unchanging is pruned away"+
-		# 	"\n\timportant information is not lost, because a special class is genereated that implicitly stores this fixed data"+
-		# 	"\n\n\tFor example: A for loop can be reduced to the ForLoop class with 5 Vars and a Code node as children"+
-		# 	"\n\tbecause these are stored in the ForLoop class, we 'know where to put them amongst the constant terminals' for all future operations"+
-		# 	"\n\n\tFurthemore, long 'lines' of single nonterminals are also drawn into each other in the cases where such chains are perfectly predictable"+
-		# 	"\n\tAs an example, note that Code nodes can have as a direct child the ForLoop node. Implicitly there is ALWAYS an INSTR node and a COND_LOOP"+
-		# 	"\n\tbetween these but they need not be represented, as we know they are always there, and this knowledge is implicitly stored in the ForLoop node."+
-		# 	"\n\tThis allows us to have neat flat Code nodes that each contain all their specific Instr nodes (like ForLoop) as their direct children"
-		# )
 		begin
 			treeManager = parse_info[1]
 			treeManager.buildTree
