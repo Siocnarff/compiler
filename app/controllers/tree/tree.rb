@@ -80,6 +80,23 @@ class TokenGenerator
     return @tokens.last()
   end
 
+  def typeCheck
+    type = @tokens.last.type
+    if type.eql?("e") or type.eql?("u")
+      raise "type error!"
+    else
+      self.none_e_or_u
+    end
+  end
+
+  def none_e_or_u
+    @tokens.each do |token|
+      if token.type.eql?("e") or token.type.eql?("u")
+        raise "type error!"
+      end
+    end
+  end
+
   def getTokens
     i = 0
     tokens = Array.new
