@@ -83,11 +83,11 @@ class TokenGenerator
   def typeCheck
     #todo : make the type error message more specific? (list all?)
     type = @tokens.last.type
-    # if type.eql?("e") or type.eql?("u")
-    #   raise "type error! (typeCheck)"
-    # else
-    #   self.none_e_or_u
-    # end
+    if type.eql?("e") or type.eql?("u")
+      raise "type error! (typeCheck)"
+    else
+      self.none_e_or_u
+    end
   end
 
   def none_e_or_u
@@ -221,7 +221,6 @@ class TokenGenerator
     @symbol_table = SymbolTable.new
     buildTreeRecursive(@tokens.last, i = 0, scope_str = "0", proc_scope = "0")
     doubleLinkTree(@tokens.last)
-    typeCheck
   end
 
   def doubleLinkTree(node)
