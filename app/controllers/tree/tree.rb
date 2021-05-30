@@ -1,6 +1,42 @@
 require 'tree/nodes.rb'
 require 'symbol_table/table.rb'
 
+class TokenStorage
+  def initialize
+    @tkns = Array.new
+  end
+
+  def array
+    filtered_tokens = Array.new
+    @tkns.each do |token|
+      unless token.is_deleted?
+        filtered_tokens.push(token)
+      end
+    end
+    return filtered_tokens
+  end
+
+  def push(token)
+    @tkns.push(token)
+  end
+
+  def last
+    @tkns.last
+  end
+
+  def delete(id)
+    @tkns[id].mark_as_deleted
+  end
+
+  def get(id)
+    target = @tkns[id]
+    if target.is_deleted?
+      raise "#{target.terminals} is deleted!"
+    end
+    @tkns[id]
+  end
+end
+
 class TokenGenerator
   def initialize
     @lgr = Logger.new("#{Rails.root}/log/test.log")
@@ -9,7 +45,7 @@ class TokenGenerator
     @procScopeSource = 0
     @scopeSource = 0
     @idSource = -1
-    @tokens = Array.new
+    @tokens = TokenStorage.new
   end
   def generate(p, lhs, rhs)
     if p == 0
@@ -77,12 +113,12 @@ class TokenGenerator
     elsif p == 38
       @tokens.push(Call.new(lhs, rhs, @idSource += 1))
     end
-    return @tokens.last()
+    return @tokens.last
   end
 
   def typeCheck
     @tokens.last.type # kick of chain reaction that calculates all types
-    @tokens.each do |token|
+    @tokens.array.each do |token|
       if token.type.eql?("e") or token.type.eql?("u")
         raise "type error!\n#{token.get_error_message}"
       end
@@ -92,7 +128,7 @@ class TokenGenerator
   def getTokens
     i = 0
     tokens = Array.new
-    @tokens.each do | token |
+    @tokens.array.each do | token |
       tokens.push(token)
       i = i + 1;
     end
@@ -105,12 +141,12 @@ class TokenGenerator
 
   def rename_procs
     id_source = -1
-    @tokens.reverse.each do |proc|
+    @tokens.array.reverse.each do |proc|
       if proc.is_a?(Procc) and proc.terminal_types[0].eql?("UDIN")
         proc_name = proc.terminals[0]
         has_mates = false
         new_name = "p#{id_source + 1}"
-        @tokens.each do |call|
+        @tokens.array.each do |call|
 
           if call.is_a?(Call)
             if call.terminals[0].eql?(proc_name)
@@ -156,7 +192,7 @@ class TokenGenerator
   end
 
   def prune_dead_procs
-    @tokens.each do |t|
+    @tokens.array.each do |t|
       token_not_renamed = t.terminal_types[0].eql?("UDIN")
       if t.is_a?(Call) and token_not_renamed
         if t.in_wrong_tree?
@@ -175,20 +211,20 @@ class TokenGenerator
     if @tokens.nil?
       raise "all tokens deleted!"
     end
-    if @tokens[id].nil?
+    if @tokens.get(id).nil?
       return
     end
-    @tokens[id].mark_as_deleted
-    @tokens[id].nts.each do |nt|
+    @tokens.get(id).nts.each do |nt|
       unless nt.nil?
         remove(nt.id)
       end
     end
+    @tokens.delete(id)
     remove_from_parent(id)
   end
 
   def remove_from_parent(id)
-    @tokens.each do |t|
+    @tokens.array.each do |t|
       if (t.remove_child_with_id(id))
         if t.has_no_children
           remove(t.id)
@@ -198,11 +234,9 @@ class TokenGenerator
   end
 
   def check_for_loop_vars
-    @tokens.each do |t|
-      unless t.is_deleted?
-        if t.is_a?(ForLoop)
-          t.raise_issue_if_vars_invalid
-        end
+    @tokens.array.each do |t|
+      if t.is_a?(ForLoop)
+        t.raise_issue_if_vars_invalid
       end
     end
   end
@@ -227,7 +261,7 @@ class TokenGenerator
   end
 
   def drawTreeRecursive(node, tree, counter, scope)
-    if node.nil? or node.is_deleted?
+    if node.nil?
       return
     end
     if tree.length <= counter
