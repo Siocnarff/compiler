@@ -320,10 +320,10 @@ class Assign < Instr
   def type_var_var(left, right)
     if left.type.eql?("n") and right.type.eql?("s")
       @type = "e"
-      return "e"
+      return
     elsif right.type.eql?("n") and left.type.eql?("s")
       @type = "e"
-      return "e"
+      return
     elsif left.type.eql?("n") and not right.type.eql?("s")
       right.set_type("n")
     elsif right.type.eql?("n") and not left.type.eql?("s")
@@ -337,7 +337,6 @@ class Assign < Instr
       right.set_type("o")
     end
     @type = "c"
-    @type
   end
 
   def type_var_numexpr(var, numexpr)
@@ -467,20 +466,120 @@ class Bool < Token
 end
 
 class BoolEq < Bool
+  # VAR, BOOL, NUMEXPR
+  def type
+    left = self.nts[0]
+    right = self.nts[1]
+    if left.is_a?(Var)
+      self.type_var_var(left, right)
+    elsif left.is_a?(Bool)
+      self.type_bool_bool(left, right)
+    elsif left.is_a(Numexpr)
+      self.type_numexpr_numexpr(left, right)
+    end
+    @type
+  end
+
+  def type_var_var(left, right)
+    if left.type.eql?("n") and right.type.eql?("s")
+      @type = "f"
+      return
+    elsif right.type.eql?("n") and left.type.eql?("s")
+      @type = "f"
+      return
+    elsif left.type.eql?("n") and not right.type.eql?("s")
+      right.set_type("n")
+    elsif right.type.eql?("n") and not left.type.eql?("s")
+      left.set_type("n")
+    elsif left.type.eql("s") and not right.type.eql?("n")
+      right.set_type.eql("s")
+    elsif right.type.eql("s") and not left.type.eql?("n")
+      left.set_type.eql("s")
+    else
+      left.set_type("o")
+      right.set_type("o")
+    end
+    @type = "b"
+  end
+
+  def type_bool_bool(left, right)
+    left_bool = left.type.eql?("b") or left.type.eql?("f")
+    right_bool = right.type.eql("b") or right.type.eql("f")
+    if left_bool and right_bool
+      @type = "b"
+    end
+  end
+
+  def type_numexpr_numexpr(left, right)
+    if left.type.eql?("n") and right.type.eql?("n")
+      @type = "b"
+    end
+  end
 end
-# VAR, BOOL, NUMEXPR
 
 class BoolLessThan < Bool
+  def type
+    var_left = self.nts[0]
+    var_right = self.nts[1]
+    if var_left.type.eql?("s") or var_right.type.eql?("s")
+      @type = "e"
+    else
+      var_left.set_type("n")
+      var_right.set_type("n")
+      @type = "b"
+    end
+    @type
+  end
 end
 
 class BoolGreaterThan < Bool
+  def type
+    var_left = self.nts[0]
+    var_right = self.nts[1]
+    if var_left.type.eql?("s") or var_right.type.eql?("s")
+      @type = "e"
+    else
+      var_left.set_type("n")
+      var_right.set_type("n")
+      @type = "b"
+    end
+    @type
+  end
 end
 
 class BoolNegation < Bool
+  bool = self.nts[0]
+  if bool.type.eql?("b") or bool.type.eql?("f")
+    @type = "b"
+  end
+  @type
 end
 
 class BoolAnd < Bool
+  def type
+    left = self.nts[0]
+    right = self.nts[1]
+    if left.type.eql?("f") and right.type.eql?("b")
+      @type = "f"
+    elsif left.type.eql?("b") and right.type.eql?("f")
+      @type = "f"
+    elsif left.type.eql?("f") and right.type.eql?("f")
+      @type = "f"
+    elsif left.type.eql?("b") and right.type.eql?("b")
+      @type = "b"
+    end
+    @type
+  end
 end
 
 class BoolOr < Bool
+  def type
+    left = self.nts[0]
+    right = self.nts[1]
+    left_bool = left.type.eql?("b") or left.type.eql?("f")
+    right_bool = right.type.eql("b") or right.type.eql("f")
+    if left_bool and right_bool
+      @type = "b"
+    end
+  end
 end
