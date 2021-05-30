@@ -125,6 +125,10 @@ class TokenGenerator
     end
   end
 
+  def pruneBasedOnType
+    @tokens.last.prune_based_on_type
+  end
+
   def getTokens
     i = 0
     tokens = Array.new

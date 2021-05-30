@@ -41,6 +41,7 @@ class ProcessController < ApplicationController
 			treeManager.prune_dead_procs
 			treeManager.check_for_loop_vars
 			treeManager.typeCheck
+			treeManager.pruneBasedOnType
 			@tree = treeManager.drawTree
 		rescue => e
 			@output.push(e)
