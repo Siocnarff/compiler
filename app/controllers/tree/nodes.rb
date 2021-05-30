@@ -48,6 +48,23 @@ class Token
   end
 
   def prune_based_on_type
+    # "child functions" have to call super first to ensure
+    # that the "d" cases are propegeted upwards correctly
+    
+    children = self.nts
+    children.each do |child|
+      child.prune_based_on_type
+    end
+    # now each child will be "d" if it ever will be
+
+    all_alive = true # vacuously true if I have no children
+    children.each do |child|
+      all_alive = all_alive and not child.type.eql?("d")
+    end
+    # if all children are "d" I should also be
+    unless all_alive
+      @type = "d"
+    end
   end
 
   def get_parent
@@ -404,6 +421,7 @@ class WhileLoop < CondLoop #instr
   end
 
   def prune_based_on_type
+    super
     bool = self.nts[0]
     if bool.type.eql?("f")
       @type = "d"
@@ -441,6 +459,7 @@ class ForLoop < CondLoop #instr
   end
 
   def prune_based_on_type
+    super
     vars = self.nts
     if vars[1].terminals[0].eql?(vars[2].terminals[0])
       @type = "d"
@@ -450,6 +469,7 @@ end
 
 class CondBranch < Token
   def prune_based_on_type
+    super
     bool = self.nts[0]
     code = self.nts[1]
     if bool.is_a?(BoolNegation) and bool.child_is_f
@@ -474,6 +494,7 @@ class IfThenElse < CondBranch #instr
   end
 
   def prune_based_on_type
+    super
     bool = self.nts[0]
     else_code = self.nts[2]
     if bool.type.eql?("f")
@@ -497,6 +518,7 @@ class IfThen < CondBranch #instr
   end
 
   def prune_based_on_type
+    super
     bool = self.nts[0]
     if bool.type.eql?("f")
       @type = "d"
