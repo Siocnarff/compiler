@@ -256,9 +256,6 @@ class Var < Token #NOT instr, only if part of assign
   end
 
   def peek_type
-    if @symbol_table_token_link.nil?
-      raise "NIL! Has Init? #{@has_init}"
-    end
     @symbol_table_token_link.get_type
   end
 
@@ -331,7 +328,7 @@ class Assign < Instr
   end
 
   def type_var_string(var)
-    if var.get_type.eql?("n")
+    if var.type.eql?("n")
       @type = "e"
     else
       var.set_type("s")
