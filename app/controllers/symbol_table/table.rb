@@ -56,12 +56,11 @@ class SymbolTable
     return false
   end
 
-
-private
   def get_last_token
-    @token
+    @last_token
   end
 
+private
   def getOrGenerateInternalName(name, is_var, is_counter_init, is_proc_init)
     scope_string = self.generateScopeString
     @table_entries.reverse.each do |entry|

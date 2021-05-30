@@ -240,16 +240,26 @@ class Instr < Token
 end
 
 class Var < Token #NOT instr, only if part of assign
+  def initialize(lhs, rhs, id)
+    super
+    @has_init = false
+    @symbol_table_token_link = nil
+  end
+
   def getUserDefinedName
     return @nt[1][1]
   end
 
   def set_token_link(token_link)
-    @symbol_table_token_link = token
+    @has_init = true
+    @symbol_table_token_link = token_link
   end
 
   def peek_type
-    return @symbol_table_token_link.get_type
+    if @symbol_table_token_link.nil?
+      raise "NIL! Has Init? #{@has_init}"
+    end
+    @symbol_table_token_link.get_type
   end
 
   def type

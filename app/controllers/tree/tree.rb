@@ -278,9 +278,11 @@ class TokenGenerator
           @symbol_table.getOrGenerateVarName(name_of_dec, is_counter_init = true)
         ]
       )
+      node.nts[0].set_token_link(@symbol_table.get_last_token)
       node.nts[1, node.nts.length - 2].each do |child|
         n = child.terminals[0]
         child.set_terminal(0, ["InternalName", @symbol_table.getOrGenerateVarName(n)])
+        child.set_token_link(@symbol_table.get_last_token)
       end
     else
       # replace any var with
