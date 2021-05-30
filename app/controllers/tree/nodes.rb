@@ -1,5 +1,6 @@
 class Token
   def initialize(lhs, rhs, id)
+    @warning = ""
     @error_message = ""
     @type = "u"
     @parent = nil
@@ -391,18 +392,22 @@ class WhileLoop < CondLoop #instr
   def type
     bool = self.nts[0]
     code = self.nts[1]
-    bool_b = bool.type.eql?("b")
-    bool_f = bool.type.eql?("f")
+    bool_valid = bool.type.eql?("b") or bool.type.eql?("f")
     code_valid = code.type.eql?("c")
     if bool.is_a?(BoolNegation) and bool.child_is_f
       @warning = "Warning! Infinite Loop!"
     end
-    if bool_f
-      @type = "d"
-    elsif bool_b and code_valid
+    if bool_valid and code_valid
       @type = "c"
     end
     @type
+  end
+
+  def prune_based_on_type
+    bool = self.nts[0]
+    if bool.type.eql?("f")
+      @type = "d"
+    end
   end
 end
 
@@ -420,23 +425,26 @@ class ForLoop < CondLoop #instr
   def type
     vars = self.nts
     code = vars.pop()
-    vars.each do |var|
-      if var.type.eql?("s")
-        @error_message = "for loop control variables may not be of type string! '#{var.terminals[1]}' violates this rule!"
-        @type = "e"
-      end
-    end
     if code.type.eql?("c")
       @type = "c"
       vars.each do |var|
         var.set_type("n")
       end
     end
-    if vars[1].terminals[0].eql?(vars[2].terminals[0])
-      @error_message = ""
-      @type = "d"
+    vars.each do |var|
+      if var.type.eql?("s")
+        @error_message = "for loop control variables may not be of type string! '#{var.terminals[1]}' violates this rule!"
+        @type = "e"
+      end
     end
     @type
+  end
+
+  def prune_based_on_type
+    vars = self.nts
+    if vars[1].terminals[0].eql?(vars[2].terminals[0])
+      @type = "d"
+    end
   end
 end
 
@@ -445,6 +453,7 @@ class CondBranch < Token
     bool = self.nts[0]
     code = self.nts[1]
     if bool.is_a?(BoolNegation) and bool.child_is_f
+      # replace myself with my child
       self.get_parent.replace_child(@id, code)
       self.mark_as_deleted
     end
@@ -468,6 +477,7 @@ class IfThenElse < CondBranch #instr
     bool = self.nts[0]
     else_code = self.nts[2]
     if bool.type.eql?("f")
+      # replace myself with my child
       self.get_parent.replace_child(@id, else_code)
       self.mark_as_deleted
     end
@@ -478,15 +488,19 @@ class IfThen < CondBranch #instr
   def type
     bool = self.nts[0]
     code = self.nts[1]
-    bool_f = bool.type.eql?("f")
-    bool_b = bool.type.eql?("b")
+    bool_valid = bool.type.eql?("f") or bool.type.eql?("b")
     code_valid = code.type.eql?("c")
-    if bool_f
-      @type = "d"
-    elsif bool_b and code_valid
+    if bool_valid and code_valid
       @type = "c"
     end
     @type
+  end
+
+  def prune_based_on_type
+    bool = self.nts[0]
+    if bool.type.eql?("f")
+      @type = "d"
+    end
   end
 end
 
