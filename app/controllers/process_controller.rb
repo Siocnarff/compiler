@@ -10,43 +10,49 @@ class ProcessController < ApplicationController
 		@tree = Array.new
 		@tree.push(Array.new)
 		@table = Array.new
+		@output.push("lexing...")
 		if not lexresp[0] # if lexing was not successful
-			@output += ["LEXING FAILED"]
-			@output += lexresp[1]
+			@output.push("LEXING ERROR!")
+			@output.push(lexresp[1])
 			return
-		else
-			@output += ["LEXED INPUT SUCCESSFULLY"]
 		end
 
+		@output.push("parsing...")
 		parse_info = parse(lexresp[2]) # send token list for check if in language
-
-		if parse_info[0]
-			@output.push("PARSING SUCCESSFULL")
-		else
-			@output.push("SYNTAX ERROR")
+		if not parse_info[0]
+			@output.push("SYNTAX ERROR!")
 			@output.push(parse_info[2])
 			return
 		end
-		@output.push(
-			"Notes on notation:" +
-			"\n\ttype of node is shown as a single character above each node" +
-			"\n\tfor Procc and Var nodes we use [] as follows: [<InternalName>, <UserDefinedName>] for ease of marking" +
-			"\n\n\t{} contains node id\n\t() contains pointers to children\n\t[] holds the variable terminals owned by the node"+
-			"\n\tSolid lines are used to indicate different levels in the tree"
-		)
 		begin
 			treeManager = parse_info[1]
+			@output.push("building doubly linked AST...")
+			@output.push("renaming variables...")
 			treeManager.buildTree
+			@output.push("renaming procs...")
 			treeManager.rename_procs
+			@output.push("pruning dead procs...")
 			treeManager.prune_dead_procs
+			@output.push("checking for-loop variable usage...")
 			treeManager.check_for_loop_vars
+			@output.push("running type inference checks...")
 			treeManager.typeCheck
+			@output.push("prune tree based on inferred type info...")
 			treeManager.pruneBasedOnType
 			@tree = treeManager.drawTree
 		rescue => e
 			@output.push(e)
 			return
 		end
+		@output.push("---------------------------------------------------------------------------------------------------------------")
+		@output.push(
+			"Notes on tree notation:" +
+			"\n\n\ttype of node is shown as a single character above each node" +
+			"\n\tfor Procc and Var nodes we use [] as follows: [<InternalName>, <UserDefinedName>] for ease of marking" +
+			"\n\n\t{} contains node id\n\t() contains pointers to children\n\t[] holds the variable terminals owned by the node"+
+			"\n\tSolid lines are used to indicate different levels in the tree"
+		)
+		@output.push("---------------------------------------------------------------------------------------------------------------")
 		@table = Array.new
 		parse_info[1].getTokens.each do |line|
 			unless line.is_deleted?
