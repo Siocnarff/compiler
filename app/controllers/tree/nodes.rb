@@ -46,6 +46,9 @@ class Token
     @error_message
   end
 
+  def prune_based_on_type
+  end
+
   def get_parent
     @parent
   end
@@ -388,9 +391,15 @@ class WhileLoop < CondLoop #instr
   def type
     bool = self.nts[0]
     code = self.nts[1]
-    bool_valid = bool.type.eql?("b") or bool.type.eql?("f")
+    bool_b = bool.type.eql?("b")
+    bool_f = bool.type.eql?("f")
     code_valid = code.type.eql?("c")
-    if bool_valid and code_valid
+    if bool.is_a?(BoolNegation) and bool.child_is_f
+      @warning = "Warning! Infinite Loop!"
+    end
+    if bool_f
+      @type = "d"
+    elsif bool_b and code_valid
       @type = "c"
     end
     @type
@@ -415,7 +424,6 @@ class ForLoop < CondLoop #instr
       if var.type.eql?("s")
         @error_message = "for loop control variables may not be of type string! '#{var.terminals[1]}' violates this rule!"
         @type = "e"
-        return
       end
     end
     if code.type.eql?("c")
@@ -424,11 +432,23 @@ class ForLoop < CondLoop #instr
         var.set_type("n")
       end
     end
+    if vars[1].terminals[0].eql?(vars[2].terminals[0])
+      @error_message = ""
+      @type = "d"
+    end
     @type
   end
 end
 
 class CondBranch < Token
+  def prune_based_on_type
+    bool = self.nts[0]
+    code = self.nts[1]
+    if bool.is_a?(BoolNegation) and bool.child_is_f
+      self.get_parent.replace_child(@id, code)
+      self.mark_as_deleted
+    end
+  end
 end
 
 class IfThenElse < CondBranch #instr
@@ -443,15 +463,27 @@ class IfThenElse < CondBranch #instr
     end
     @type
   end
+
+  def prune_based_on_type
+    bool = self.nts[0]
+    else_code = self.nts[2]
+    if bool.type.eql?("f")
+      self.get_parent.replace_child(@id, else_code)
+      self.mark_as_deleted
+    end
+  end
 end
 
 class IfThen < CondBranch #instr
   def type
     bool = self.nts[0]
     code = self.nts[1]
-    bool_valid = bool.type.eql?("b") or bool.type.eql?("f")
+    bool_f = bool.type.eql?("f")
+    bool_b = bool.type.eql?("b")
     code_valid = code.type.eql?("c")
-    if bool_valid and code_valid
+    if bool_f
+      @type = "d"
+    elsif bool_b and code_valid
       @type = "c"
     end
     @type
@@ -606,6 +638,10 @@ class BoolNegation < Bool
       @type = "b"
     end
     @type
+  end
+
+  def child_is_f
+    bool.type.eql?("f")
   end
 end
 
