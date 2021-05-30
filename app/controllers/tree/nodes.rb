@@ -350,10 +350,10 @@ class Assign < Instr
       right.set_type("n")
     elsif right.type.eql?("n") and not left.type.eql?("s")
       left.set_type("n")
-    elsif left.type.eql("s") and not right.type.eql?("n")
-      right.set_type.eql("s")
-    elsif right.type.eql("s") and not left.type.eql?("n")
-      left.set_type.eql("s")
+    elsif left.type.eql?("s") and not right.type.eql?("n")
+      right.set_type.eql?("s")
+    elsif right.type.eql?("s") and not left.type.eql?("n")
+      left.set_type.eql?("s")
     else
       left.set_type("o")
       right.set_type("o")
@@ -401,7 +401,7 @@ class ForLoop < CondLoop #instr
 
   def type
     vars = self.nts
-    code = children.pop()
+    code = vars.pop()
     vars.each do |var|
       if var.type.eql?("s")
         @type = "e"
@@ -530,10 +530,10 @@ class BoolEq < Bool
       right.set_type("n")
     elsif right.type.eql?("n") and not left.type.eql?("s")
       left.set_type("n")
-    elsif left.type.eql("s") and not right.type.eql?("n")
-      right.set_type.eql("s")
-    elsif right.type.eql("s") and not left.type.eql?("n")
-      left.set_type.eql("s")
+    elsif left.type.eql?("s") and not right.type.eql?("n")
+      right.set_type.eql?("s")
+    elsif right.type.eql?("s") and not left.type.eql?("n")
+      left.set_type.eql?("s")
     else
       left.set_type("o")
       right.set_type("o")
@@ -543,7 +543,7 @@ class BoolEq < Bool
 
   def type_bool_bool(left, right)
     left_bool = left.type.eql?("b") or left.type.eql?("f")
-    right_bool = right.type.eql("b") or right.type.eql("f")
+    right_bool = right.type.eql?("b") or right.type.eql?("f")
     if left_bool and right_bool
       @type = "b"
     end
@@ -618,7 +618,7 @@ class BoolOr < Bool
     left = self.nts[0]
     right = self.nts[1]
     left_bool = left.type.eql?("b") or left.type.eql?("f")
-    right_bool = right.type.eql("b") or right.type.eql("f")
+    right_bool = right.type.eql?("b") or right.type.eql?("f")
     if left_bool and right_bool
       @type = "b"
     end
