@@ -374,9 +374,30 @@ class CondBranch < Token
 end
 
 class IfThenElse < CondBranch #instr
+  def type
+    bool = self.nts[0]
+    then_code = self.nts[1]
+    else_code = self.nts[2]
+    bool_valid = bool.type.eql?("b") or bool.type.eql?("f")
+    code_valid = then_code.type.eql?("c") and else_code.type.eql?("c")
+    if bool_valid and code_valid
+      @type = "c"
+    end
+    @type
+  end
 end
 
 class IfThen < CondBranch #instr
+  def type
+    bool = self.nts[0]
+    code = self.nts[1]
+    bool_valid = bool.type.eql?("b") or bool.type.eql?("f")
+    code_valid = code.type.eql?("c")
+    if bool_valid and code_valid
+      @type = "c"
+    end
+    @type
+  end
 end
 
 class Numexpr < Token
