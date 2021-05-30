@@ -23,7 +23,7 @@ class Token
 
   def type
     if all_children_are?("c")
-        @type = type
+        @type = "c"
     end
     @type
   end
@@ -240,8 +240,8 @@ class Var < Token #NOT instr, only if part of assign
     return @nt[1][1]
   end
 
-  def set_token_link(token)
-    @symbol_table_token_link
+  def set_token_link(token_link)
+    @symbol_table_token_link = token
   end
 
   def type
@@ -261,22 +261,26 @@ class Halt < Instr
 end
 
 class IOInput < Instr
-  var = self.nts[0]
-  if var.type.eql?("s")
-    @type = "e"
-  else
-    var.set_type("n")
-    @type = "c"
+  def type
+    var = self.nts[0]
+    if var.type.eql?("s")
+      @type = "e"
+    else
+      var.set_type("n")
+      @type = "c"
+    end
+    @type
   end
-  @type
 end
 
 class IOOutput < Instr
-  var = self.nts[0]
-  if var.type.eql?("n") or var.type.eql?("s")
-    @type = "c"
+  def type
+    var = self.nts[0]
+    if var.type.eql?("n") or var.type.eql?("s")
+      @type = "c"
+    end
+    @type
   end
-  @type
 end
 
 class Call < Instr
@@ -346,7 +350,6 @@ class Assign < Instr
       var.set_type("n")
       @type = "c"
     end
-    @type
   end
 end
 # VAR, String, NUMEXPR
@@ -548,11 +551,13 @@ class BoolGreaterThan < Bool
 end
 
 class BoolNegation < Bool
-  bool = self.nts[0]
-  if bool.type.eql?("b") or bool.type.eql?("f")
-    @type = "b"
+  def type
+    bool = self.nts[0]
+    if bool.type.eql?("b") or bool.type.eql?("f")
+      @type = "b"
+    end
+    @type
   end
-  @type
 end
 
 class BoolAnd < Bool
@@ -581,5 +586,6 @@ class BoolOr < Bool
     if left_bool and right_bool
       @type = "b"
     end
+    @type
   end
 end
