@@ -30,7 +30,7 @@ class ProcessController < ApplicationController
 		@output.push(
 			"Notes on notation:" +
 			"\n\ttype of node is shown as a single character above each node" +
-			"\n\tfor Procc and Var nodes we : [<InternalName>, <UserDefinedName>] for ease of marking" +
+			"\n\tfor Procc and Var nodes we use [] as follows: [<InternalName>, <UserDefinedName>] for ease of marking" +
 			"\n\n\t{} contains node id\n\t() contains pointers to children\n\t[] holds the variable terminals owned by the node"+
 			"\n\tSolid lines are used to indicate different levels in the tree"
 		)

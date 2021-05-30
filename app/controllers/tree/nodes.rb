@@ -187,7 +187,7 @@ class Token
   end
 
   def printTable
-    return "#{@id} #{@name}\nterminal children:#{@t.inspect}\nscope: #{@scope}"
+    return "#{@id} #{@name}\nterminal children:#{@t.inspect}\nscope: #{@scope}\ntype: #{peek_type}"
   end
 
   def printTree
