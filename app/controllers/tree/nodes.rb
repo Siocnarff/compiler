@@ -333,6 +333,13 @@ class Assign < Instr
   end
 
   def type_var_numexpr(var, numexpr)
+    if var.type.eql?("s")
+      @type = "e"
+    elsif numexpr.type.eql?("n")
+      var.set_type("n")
+      @type = "c"
+    end
+    @type
   end
 
   def type_var_string(var)
