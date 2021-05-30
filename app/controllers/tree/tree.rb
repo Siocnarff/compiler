@@ -81,20 +81,10 @@ class TokenGenerator
   end
 
   def typeCheck
-    #todo : make the type error message more specific? (list all?)
-    type = @tokens.last.type
-    if type.eql?("e") or type.eql?("u")
-      raise "type error! (typeCheck)"
-    else
-      self.none_e_or_u
-    end
-  end
-
-  def none_e_or_u
-    @lgr.info("!!!! none_e_or_u called !!!!")
+    @tokens.last.type # kick of chain reaction that calculates all types
     @tokens.each do |token|
       if token.type.eql?("e") or token.type.eql?("u")
-        raise "type error! (none_e_or_u)"
+        raise "type error!\n#{token.get_error_message}"
       end
     end
   end

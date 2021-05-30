@@ -1,5 +1,6 @@
 class Token
   def initialize(lhs, rhs, id)
+    @error_message = ""
     @type = "u"
     @parent = nil
     @deleted = false
@@ -39,6 +40,10 @@ class Token
       are_type = are_type and child.type.eql?(type)
     end
     return are_type
+  end
+
+  def get_error_message
+    @error_message
   end
 
   def get_parent
@@ -113,7 +118,9 @@ class Token
   end
 
   def set_terminal(index, item)
-    @t.delete_at(index)
+    unless @t[index][0].eql?("UserDefinedName")
+      @t.delete_at(index)
+    end
     @t.insert(index, item)
   end
 
@@ -279,6 +286,7 @@ class IOInput < Instr
   def type
     var = self.nts[0]
     if var.type.eql?("s")
+      @error_message = "io inputs have to be saved in var of type number! #{var.terminals[1]} is not of type number!"
       @type = "e"
     else
       var.set_type("n")
@@ -329,6 +337,7 @@ class Assign < Instr
 
   def type_var_string(var)
     if var.type.eql?("n")
+      @error_message = "#{var.terminals[1]} is of type number and you may not assign a string to it!"
       @type = "e"
     else
       var.set_type("s")
@@ -338,9 +347,11 @@ class Assign < Instr
 
   def type_var_var(left, right)
     if left.type.eql?("n") and right.type.eql?("s")
+      @error_message= "#{var.terminals[1]} is of type number and you may not assign string variable #{left.terminals[1]} to it!"
       @type = "e"
       return
     elsif right.type.eql?("n") and left.type.eql?("s")
+      @error_message= "#{var.terminals[1]} is of type number and may not be assigned to string variable #{left.terminals[1]}!"
       @type = "e"
       return
     elsif left.type.eql?("n") and not right.type.eql?("s")
@@ -360,6 +371,7 @@ class Assign < Instr
 
   def type_var_numexpr(var, numexpr)
     if var.type.eql?("s")
+      @error_message = "may not assign a number to string var #{var.terminals[1]}"
       @type = "e"
     elsif numexpr.type.eql?("n")
       var.set_type("n")
@@ -401,6 +413,7 @@ class ForLoop < CondLoop #instr
     code = vars.pop()
     vars.each do |var|
       if var.type.eql?("s")
+        @error_message = "for loop control variables may not be of type string! #{var.terminals[1]} violates this rule!"
         @type = "e"
         return
       end
@@ -463,6 +476,7 @@ class Numexpr < Token
 
   def type_var(var)
     if var.type.eql?("s")
+      @error_message = "numexpr may not have var of type string! #{var.terminals} breaks this rule!"
       @type = "e"
     else
       var.set_type("n")
@@ -558,6 +572,7 @@ class BoolLessThan < Bool
     var_left = self.nts[0]
     var_right = self.nts[1]
     if var_left.type.eql?("s") or var_right.type.eql?("s")
+      @type_error = "less than comparison may not operate on strings!"
       @type = "e"
     else
       var_left.set_type("n")
@@ -573,6 +588,7 @@ class BoolGreaterThan < Bool
     var_left = self.nts[0]
     var_right = self.nts[1]
     if var_left.type.eql?("s") or var_right.type.eql?("s")
+      @type_error = "greater than comparison may not operate on strings!"
       @type = "e"
     else
       var_left.set_type("n")
