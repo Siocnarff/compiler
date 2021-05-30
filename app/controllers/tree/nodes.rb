@@ -356,6 +356,16 @@ class CondLoop < Token
 end
 
 class WhileLoop < CondLoop #instr
+  def type
+    bool = self.nts[0]
+    code = self.nts[1]
+    bool_valid = bool.type.eql?("b") or bool.type.eql?("f")
+    code_valid = code.type.eql?("c")
+    if bool_valid and code_valid
+      @type = "c"
+    end
+    @type
+  end
 end
 
 class ForLoop < CondLoop #instr
