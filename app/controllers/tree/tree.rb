@@ -3,7 +3,7 @@ require 'symbol_table/table.rb'
 
 class TokenGenerator
   def initialize
-    @lgr = Logger.new("#{Rails.root}/log/test.log")
+    # @lgr = Logger.new("#{Rails.root}/log/test.log")
     @tree = Array.new
     @symbol_table = SymbolTable.new
     @procScopeSource = 0
@@ -96,7 +96,6 @@ class TokenGenerator
 
   def rename_procs
     id_source = -1
-    @lgr.info("\n================================================================\n")
     @tokens.reverse.each do |proc|
       if proc.is_a?(Procc) and proc.terminal_types[0].eql?("UDIN")
         proc_name = proc.terminals[0]
@@ -270,6 +269,7 @@ class TokenGenerator
         if child.is_a?(Var)
           n = child.terminals[0]
           child.set_terminal(0, ["InternalName", @symbol_table.getOrGenerateVarName(n)])
+          child.set_token_link(@symbol_table.get_last_token)
         elsif child.is_a?(Call)
           n = child.terminals[0]
           child.set_terminal(0, ["UDIN", @symbol_table.getOrGenerateProcName(n)])

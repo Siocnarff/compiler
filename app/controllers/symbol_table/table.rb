@@ -13,6 +13,7 @@ class SymbolTable
     @var_name_id_source = -1
     @proc_name_id_source = -1
     @scope_id_source = 0
+    @last_token = nil
   end
 
   def open_new_scope
@@ -57,6 +58,10 @@ class SymbolTable
 
 
 private
+  def get_last_token
+    @token
+  end
+
   def getOrGenerateInternalName(name, is_var, is_counter_init, is_proc_init)
     scope_string = self.generateScopeString
     @table_entries.reverse.each do |entry|
@@ -70,7 +75,8 @@ private
         end
         unless is_counter_init
           entry.set_is_proc_init(is_proc_init)
-          return entry.internal_name
+          @last_token = entry
+          return @last_token.internal_name
         end
       end
     end
@@ -83,7 +89,8 @@ private
         scope_string = scope_string
       )
     )
-    @table_entries.last.internal_name
+    @last_token = @table_entries.last
+    @last_token.internal_name
   end
 
   def generateScopeString
@@ -124,6 +131,19 @@ class TableEntry
     @is_var = is_var
     @is_proc_init = is_proc_init
     @scope = scope_string
+    if is_var
+      @type = "u"
+    else
+      @type = "p"
+    end
+  end
+
+  def get_type
+    @type
+  end
+
+  def set_type(type)
+    @type = type
   end
 
   def internal_name

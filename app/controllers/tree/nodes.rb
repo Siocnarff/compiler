@@ -1,5 +1,6 @@
 class Token
   def initialize(lhs, rhs, id)
+    @type = "u"
     @parent = nil
     @deleted = false
     @proc_scope = "0"
@@ -18,6 +19,22 @@ class Token
     end
     @nt.push(lhs[0])
     @nt.reverse!
+  end
+
+  def type
+    if all_children_are?("c")
+        @type = type
+    end
+    @type
+  end
+
+  def all_children_are?(type)
+    children = self.nts
+    are_type = true # if no children then vacuously true
+    children.each do |child|
+      are_type = are_type and child.type.eql?(type)
+    end
+    return are_type
   end
 
   def get_parent
@@ -222,15 +239,44 @@ class Var < Token #NOT instr, only if part of assign
   def getUserDefinedName
     return @nt[1][1]
   end
+
+  def set_token_link(token)
+    @symbol_table_token_link
+  end
+
+  def type
+    type_string = @symbol_table_token_link.get_type
+    if type_string.eql?("u")
+      self.set_type("o")
+    end
+    return type_string
+  end
+
+  def set_type(type)
+    @symbol_table_token_link.set_type(type)
+  end
 end
 
 class Halt < Instr
 end
 
 class IOInput < Instr
+  var = self.nts[0]
+  if var.type.eql?("s")
+    @type = "e"
+  else
+    var.set_type("n")
+    @type = "c"
+  end
+  @type
 end
 
 class IOOutput < Instr
+  var = self.nts[0]
+  if var.type.eql?("n") or var.type.eql?("s")
+    @type = "c"
+  end
+  @type
 end
 
 class Call < Instr
@@ -250,6 +296,53 @@ end
 #UserDefinedName
 
 class Assign < Instr
+  def type
+    var = self.nts[0]
+    target = self.nts[1]
+    if target.is_a?(Var)
+      type_var_var(var, target)
+    elsif target.is_a?(Numexpr)
+      type_var_numexpr(var, target)
+    else
+      type_var_string(var)
+    end
+    @type
+  end
+
+  def type_var_var(left, right)
+    if left.type.eql?("n") and right.type.eql?("s")
+      @type = "e"
+      return "e"
+    elsif right.type.eql?("n") and left.type.eql?("s")
+      @type = "e"
+      return "e"
+    elsif left.type.eql?("n") and not right.type.eql?("s")
+      right.set_type("n")
+    elsif right.type.eql?("n") and not left.type.eql?("s")
+      left.set_type("n")
+    elsif left.type.eql("s") and not right.type.eql?("n")
+      right.set_type.eql("s")
+    elsif right.type.eql("s") and not left.type.eql?("n")
+      left.set_type.eql("s")
+    else
+      left.set_type("o")
+      right.set_type("o")
+    end
+    @type = "c"
+    @type
+  end
+
+  def type_var_numexpr(var, numexpr)
+  end
+
+  def type_var_string(var)
+    if var.get_type.eql?("n")
+      @type = "e"
+    else
+      var.set_type("s")
+      @type = "c"
+    end
+  end
 end
 # VAR, String, NUMEXPR
 
