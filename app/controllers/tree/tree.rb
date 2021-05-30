@@ -3,7 +3,7 @@ require 'symbol_table/table.rb'
 
 class TokenGenerator
   def initialize
-    # @lgr = Logger.new("#{Rails.root}/log/test.log")
+    @lgr = Logger.new("#{Rails.root}/log/test.log")
     @tree = Array.new
     @symbol_table = SymbolTable.new
     @procScopeSource = 0
@@ -83,16 +83,17 @@ class TokenGenerator
   def typeCheck
     type = @tokens.last.type
     if type.eql?("e") or type.eql?("u")
-      raise "type error!"
+      raise "type error! (typeCheck)"
     else
       self.none_e_or_u
     end
   end
 
   def none_e_or_u
+    @lgr.info("!!!! none_e_or_u called !!!!")
     @tokens.each do |token|
       if token.type.eql?("e") or token.type.eql?("u")
-        raise "type error!"
+        raise "type error! (none_e_or_u)"
       end
     end
   end
