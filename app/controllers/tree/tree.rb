@@ -81,6 +81,7 @@ class TokenGenerator
   end
 
   def typeCheck
+    #todo : make the type error message more specific? (list all?)
     type = @tokens.last.type
     if type.eql?("e") or type.eql?("u")
       raise "type error! (typeCheck)"

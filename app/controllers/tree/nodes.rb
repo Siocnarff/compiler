@@ -21,6 +21,10 @@ class Token
     @nt.reverse!
   end
 
+  def peek_type
+    @type
+  end
+
   def type
     if all_children_are?("c")
         @type = "c"
@@ -204,7 +208,7 @@ class Token
       counter = c.length - b.length
       b += " "*counter
     end
-    return " #{@scope}\n" + a + " |  \n" + b + " |  \n" + c + " |"
+    return " #{peek_type()}\n #{@scope}\n" + a + " |  \n" + b + " |  \n" + c + " |"
   end
 end
 
@@ -242,6 +246,10 @@ class Var < Token #NOT instr, only if part of assign
 
   def set_token_link(token_link)
     @symbol_table_token_link = token
+  end
+
+  def peek_type
+    return @symbol_table_token_link.get_type
   end
 
   def type
