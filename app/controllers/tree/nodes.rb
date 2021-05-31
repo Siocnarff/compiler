@@ -49,6 +49,7 @@ class Token
   end
 
   def prune_based_on_type
+    @lgr.info(@id)
     # "child functions" have to call super first to ensure
     # that the "d" cases are propageted upwards correctly
     children = self.nts
@@ -56,13 +57,12 @@ class Token
       child.prune_based_on_type
     end
     # now each child will be "d" if it ever will be
-    all_alive = true
-    # all_alive vacuously true if I have no children
+    all_dead = (children.length == 1)
     children.each do |child|
-      all_alive = (all_alive and not child.type.eql?("d"))
+      all_dead = (all_dead and child.peek_type.eql?("d"))
     end
     # if all children are "d" I should also be dead
-    unless all_alive
+    if all_dead
       @type = "d"
     end
   end
@@ -445,7 +445,7 @@ class WhileLoop < CondLoop #instr
   def prune_based_on_type
     super
     bool = self.nts[0]
-    if bool.type.eql?("f")
+    if bool.peek_type.eql?("f")
       @type = "d"
     end
   end
@@ -519,7 +519,7 @@ class IfThenElse < CondBranch #instr
     super
     bool = self.nts[0]
     else_code = self.nts[2]
-    if bool.type.eql?("f")
+    if bool.peek_type.eql?("f")
       # replace myself with my child
       self.get_parent.replace_child(@id, else_code)
       self.mark_self_and_children_deleted
@@ -543,8 +543,10 @@ class IfThen < CondBranch #instr
   def prune_based_on_type
     super
     bool = self.nts[0]
-    if bool.type.eql?("f")
+    @lgr.info("!!!!! #{bool.type}")
+    if bool.peek_type.eql?("f")
       @type = "d"
+      @lgr.info(@type)
     end
   end
 end
@@ -723,7 +725,7 @@ class BoolNegation < Bool
 
   def child_is_f
     bool = self.nts[0]
-    bool.type.eql?("f")
+    bool.peek_type.eql?("f")
   end
 end
 
