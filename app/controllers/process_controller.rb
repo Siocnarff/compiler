@@ -31,7 +31,7 @@ class ProcessController < ApplicationController
 			treeManager.buildTree
 			@output.push("renaming procs...")
 			treeManager.rename_procs
-			@output.push("pruning dead procs...")
+			@output.push("checking procs / pruning dead procs...")
 			treeManager.prune_dead_procs
 			@output.push("checking for-loop variable usage...")
 			treeManager.check_for_loop_vars

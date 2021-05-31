@@ -1,5 +1,6 @@
 class Token
   def initialize(lhs, rhs, id)
+    @lgr = Logger.new("#{Rails.root}/log/test2.log")
     @warning = ""
     @error_message = ""
     @type = "u"
@@ -109,12 +110,34 @@ class Token
     return true
   end
 
+  def replace_child(id, replacment)
+    unless @nt.nil?
+      updated_children = Array.new
+      self.nts.each do |child|
+        if child.id != id
+          updated_children.push(child)
+        else
+          updated_children.push(replacment)
+        end
+      end
+      @nt = @nt[0,1] + updated_children
+    end
+  end
+
   def has_no_children
     @nt.length < 2
   end
 
   def mark_as_deleted
     @deleted = true
+  end
+
+  def mark_self_and_children_deleted
+    children = self.nts
+    children.each do |child|
+      child.mark_self_and_children_deleted
+    end
+    self.mark_as_deleted
   end
 
   def is_deleted?
@@ -433,7 +456,7 @@ class ForLoop < CondLoop #instr
     c = self.nts
     var_name = c[0].terminals[0];
     unless c[1].terminals[0].eql?(var_name) and c[3].terminals[0].eql?(var_name) and c[4].terminals[0].eql?(var_name)
-      raise "for loop counting variable incorrectly defined, should have the same name"
+      raise "for-loop counting variable incorrectly defined, should have the same name"
     end
     # call on code block
     c[5].does_not_contain_assignment(var_name)
@@ -450,7 +473,7 @@ class ForLoop < CondLoop #instr
     end
     vars.each do |var|
       if var.type.eql?("s")
-        @error_message = "for loop control variables may not be of type string! '#{var.terminals[1]}' violates this rule!"
+        @error_message = "for-loop control variables may not be of type string! '#{var.terminals[1]}' violates this rule!"
         @type = "e"
       end
     end
@@ -474,7 +497,7 @@ class CondBranch < Token
     if bool.is_a?(BoolNegation) and bool.child_is_f
       # replace myself with my child
       self.get_parent.replace_child(@id, code)
-      self.mark_as_deleted
+      self.mark_self_and_children_deleted
     end
   end
 end
@@ -499,7 +522,7 @@ class IfThenElse < CondBranch #instr
     if bool.type.eql?("f")
       # replace myself with my child
       self.get_parent.replace_child(@id, else_code)
-      self.mark_as_deleted
+      self.mark_self_and_children_deleted
     end
   end
 end
@@ -508,9 +531,10 @@ class IfThen < CondBranch #instr
   def type
     bool = self.nts[0]
     code = self.nts[1]
-    bool_valid = bool.type.eql?("f") or bool.type.eql?("b")
+    bool_valid = (bool.type.eql?("f") or bool.type.eql?("b"))
     code_valid = code.type.eql?("c")
     if bool_valid and code_valid
+      @lgr.info("TRUE")
       @type = "c"
     end
     @type
@@ -676,6 +700,7 @@ class BoolNegation < Bool
   end
 
   def child_is_f
+    bool = self.nts[0]
     bool.type.eql?("f")
   end
 end

@@ -119,7 +119,7 @@ class TokenGenerator
   def typeCheck
     @tokens.last.type # kick of chain reaction that calculates all types
     @tokens.array.each do |token|
-      if token.type.eql?("e") or token.type.eql?("u")
+      if token.type.eql?("e")
         raise "type error!\n#{token.get_error_message}"
       end
     end
