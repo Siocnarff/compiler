@@ -561,13 +561,21 @@ class Numexpr < Token
     @type
   end
 
+  def only_a_var?
+    self.nts.length == 1 and self.nts[0].is_a?(Var)
+  end
+
+  def get_child
+    self.nts[0]
+  end
+
   def type_integer
     @type = "n"
   end
 
   def type_var(var)
     if var.type.eql?("s")
-      @error_message = "numexpr may not have var of type string! '#{var.terminals}' breaks this rule!"
+      @error_message = "numexpr may not have var of type string! '#{var.terminals[1]}' breaks this rule!"
       @type = "e"
     else
       var.set_type("n")
@@ -609,16 +617,30 @@ end
 class BoolEq < Bool
   # VAR, BOOL, NUMEXPR
   def type
+    self.attempt_reduce_to_var_var
     left = self.nts[0]
     right = self.nts[1]
     if left.is_a?(Var)
       self.type_var_var(left, right)
     elsif left.is_a?(Bool)
       self.type_bool_bool(left, right)
-    elsif left.is_a(Numexpr)
+    elsif left.is_a?(Numexpr)
       self.type_numexpr_numexpr(left, right)
     end
     @type
+  end
+
+  def attempt_reduce_to_var_var
+    left = self.nts[0]
+    right = self.nts[1]
+    if left.is_a?(Numexpr) and right.is_a?(Numexpr)
+      if left.only_a_var? and right.only_a_var?
+        self.replace_child(left.id, left.get_child)
+        self.replace_child(right.id, right.get_child)
+        left.mark_as_deleted
+        right.mark_as_deleted
+      end
+    end
   end
 
   def type_var_var(left, right)
