@@ -132,7 +132,7 @@ class TokenGenerator
   end
 
   def remove_marked_as_d(node)
-    if node.peek_type = "d"
+    if node.peek_type.eql?("d")
       remove(node.id)
     else
       node.nts.each do |child|

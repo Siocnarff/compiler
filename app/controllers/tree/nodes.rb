@@ -230,7 +230,7 @@ class Token
   end
 
   def printTable
-    return "#{@id} #{@name}\nterminal children:#{@t.inspect}\nscope: #{@scope}\ntype: #{peek_type}"
+    return "#{@id} #{@name}\nterminal children:#{@t.inspect}\nscope: #{@scope}\ntype: #{self.peek_type}"
   end
 
   def printTree
@@ -378,7 +378,7 @@ class Assign < Instr
     @type
   end
 
-  def calculate_type_var_string(var)
+  def type_var_string(var)
     if var.calculate_type.eql?("n")
       @error_message = "'#{var.terminals[1]}' is of type number and you may not assign a string to it!"
       @type = "e"
@@ -388,7 +388,7 @@ class Assign < Instr
     end
   end
 
-  def calculate_type_var_var(left, right)
+  def type_var_var(left, right)
     if left.calculate_type.eql?("n") and right.calculate_type.eql?("s")
       @error_message= "'#{var.terminals[1]}' is of type number and you may not assign string variable '#{left.terminals[1]}' to it!"
       @type = "e"
@@ -412,7 +412,7 @@ class Assign < Instr
     @type = "c"
   end
 
-  def calculate_type_var_numexpr(var, numexpr)
+  def type_var_numexpr(var, numexpr)
     if var.calculate_type.eql?("s")
       @error_message = "may not assign a number to string var '#{var.terminals[1]}'"
       @type = "e"
@@ -543,7 +543,6 @@ class IfThen < CondBranch #instr
   def mark_d_or_prune_based_on_type
     super
     bool = self.nts[0]
-    @lgr.info("!!!!! #{bool.type}")
     if bool.peek_type.eql?("f")
       @type = "d"
       @lgr.info(@type)
@@ -571,11 +570,11 @@ class Numexpr < Token
     self.nts[0]
   end
 
-  def calculate_type_integer
+  def type_integer
     @type = "n"
   end
 
-  def calculate_type_var(var)
+  def type_var(var)
     if var.calculate_type.eql?("s")
       @error_message = "numexpr may not have var of type string! '#{var.terminals[1]}' breaks this rule!"
       @type = "e"
@@ -585,7 +584,7 @@ class Numexpr < Token
     end
   end
 
-  def calculate_type_calc(calc)
+  def type_calc(calc)
     if calc.calculate_type.eql?("n")
       @type = "n"
     end
@@ -645,7 +644,7 @@ class BoolEq < Bool
     end
   end
 
-  def calculate_type_var_var(left, right)
+  def type_var_var(left, right)
     if left.calculate_type.eql?("n") and right.calculate_type.eql?("s")
       @type = "f"
       return
@@ -667,7 +666,7 @@ class BoolEq < Bool
     @type = "b"
   end
 
-  def calculate_type_bool_bool(left, right)
+  def type_bool_bool(left, right)
     left_bool = (left.calculate_type.eql?("b") or left.calculate_type.eql?("f"))
     right_bool = (right.calculate_type.eql?("b") or right.calculate_type.eql?("f"))
     if left_bool and right_bool
@@ -675,7 +674,7 @@ class BoolEq < Bool
     end
   end
 
-  def calculate_type_numexpr_numexpr(left, right)
+  def type_numexpr_numexpr(left, right)
     if left.calculate_type.eql?("n") and right.calculate_type.eql?("n")
       @type = "b"
     end
