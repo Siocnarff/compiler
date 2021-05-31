@@ -39,7 +39,7 @@ class Token
     children = self.nts
     are_type = true # if no children then vacuously true
     children.each do |child|
-      are_type = are_type and child.type.eql?(type)
+      are_type = (are_type and child.type.eql?(type))
     end
     return are_type
   end
@@ -59,7 +59,7 @@ class Token
     all_alive = true
     # all_alive vacuously true if I have no children
     children.each do |child|
-      all_alive = all_alive and not child.type.eql?("d")
+      all_alive = (all_alive and not child.type.eql?("d"))
     end
     # if all children are "d" I should also be dead
     unless all_alive
@@ -431,7 +431,7 @@ class WhileLoop < CondLoop #instr
   def type
     bool = self.nts[0]
     code = self.nts[1]
-    bool_valid = bool.type.eql?("b") or bool.type.eql?("f")
+    bool_valid = (bool.type.eql?("b") or bool.type.eql?("f"))
     code_valid = code.type.eql?("c")
     if bool.is_a?(BoolNegation) and bool.child_is_f
       @warning = "Warning! Infinite Loop!"
@@ -507,8 +507,8 @@ class IfThenElse < CondBranch #instr
     bool = self.nts[0]
     then_code = self.nts[1]
     else_code = self.nts[2]
-    bool_valid = bool.type.eql?("b") or bool.type.eql?("f")
-    code_valid = then_code.type.eql?("c") and else_code.type.eql?("c")
+    bool_valid = (bool.type.eql?("b") or bool.type.eql?("f"))
+    code_valid = (then_code.type.eql?("c") and else_code.type.eql?("c"))
     if bool_valid and code_valid
       @type = "c"
     end
@@ -644,8 +644,8 @@ class BoolEq < Bool
   end
 
   def type_bool_bool(left, right)
-    left_bool = left.type.eql?("b") or left.type.eql?("f")
-    right_bool = right.type.eql?("b") or right.type.eql?("f")
+    left_bool = (left.type.eql?("b") or left.type.eql?("f"))
+    right_bool = (right.type.eql?("b") or right.type.eql?("f"))
     if left_bool and right_bool
       @type = "b"
     end
@@ -726,8 +726,8 @@ class BoolOr < Bool
   def type
     left = self.nts[0]
     right = self.nts[1]
-    left_bool = left.type.eql?("b") or left.type.eql?("f")
-    right_bool = right.type.eql?("b") or right.type.eql?("f")
+    left_bool = (left.type.eql?("b") or left.type.eql?("f"))
+    right_bool = (right.type.eql?("b") or right.type.eql?("f"))
     if left_bool and right_bool
       @type = "b"
     end
