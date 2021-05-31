@@ -116,6 +116,16 @@ class TokenGenerator
     return @tokens.last
   end
 
+  def getAllWarnings
+    warnings = Array.new
+    @tokens.array.each do |token|
+      if token.has_warning?
+        warnings.push("\t" + token.warning)
+      end
+    end
+    return warnings
+  end
+
   def typeCheck
     @tokens.last.calculate_type # kick of chain reaction that calculates all types
     @tokens.array.each do |token|
@@ -128,6 +138,9 @@ class TokenGenerator
   def pruneBasedOnType
     root = @tokens.last
     root.mark_d_or_prune_based_on_type # kick of chain reaction of marking and some just in time pruning
+    if root.peek_type.eql?("d")
+      raise "entire AST is dead!"
+    end
     remove_marked_as_d(root)
   end
 

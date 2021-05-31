@@ -24,6 +24,14 @@ class Token
     @nt.reverse!
   end
 
+  def has_warning?
+    not @warning.eql?("")
+  end
+
+  def warning
+    @warning
+  end
+
   def peek_type
     @type
   end
