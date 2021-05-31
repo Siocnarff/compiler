@@ -117,16 +117,28 @@ class TokenGenerator
   end
 
   def typeCheck
-    @tokens.last.type # kick of chain reaction that calculates all types
+    @tokens.last.calculate_type # kick of chain reaction that calculates all types
     @tokens.array.each do |token|
-      if token.type.eql?("e") or token.type.eql?("u")
+      if token.peek_type.eql?("e") or token.peek_type.eql?("u")
         raise "type error!\n#{token.get_error_message}"
       end
     end
   end
 
   def pruneBasedOnType
-    @tokens.last.prune_based_on_type
+    root = @tokens.last
+    root.mark_d_or_prune_based_on_type # kick of chain reaction of marking and some just in time pruning
+    remove_marked_as_d(root)
+  end
+
+  def remove_marked_as_d(node)
+    if node.peek_type = "d"
+      remove(node.id)
+    else
+      node.nts.each do |child|
+        remove_marked_as_d(child)
+      end
+    end
   end
 
   def getTokens
