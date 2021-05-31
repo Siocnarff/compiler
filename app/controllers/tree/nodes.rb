@@ -28,7 +28,7 @@ class Token
     @type
   end
 
-  def type
+  def calculate_type
     if all_children_are?("c")
         @type = "c"
     end
@@ -39,7 +39,7 @@ class Token
     children = self.nts
     are_type = true # if no children then vacuously true
     children.each do |child|
-      are_type = (are_type and child.type.eql?(type))
+      are_type = (are_type and child.calculate_type.eql?(type))
     end
     return are_type
   end
@@ -48,13 +48,13 @@ class Token
     @error_message
   end
 
-  def prune_based_on_type
+  def mark_d_or_prune_based_on_type
     @lgr.info(@id)
     # "child functions" have to call super first to ensure
     # that the "d" cases are propageted upwards correctly
     children = self.nts
     children.each do |child|
-      child.prune_based_on_type
+      child.mark_d_or_prune_based_on_type
     end
     # now each child will be "d" if it ever will be
     all_dead = (children.length == 1)
@@ -309,7 +309,7 @@ class Var < Token #NOT instr, only if part of assign
     @symbol_table_token_link.get_type
   end
 
-  def type
+  def calculate_type
     type_string = @symbol_table_token_link.get_type
     if type_string.eql?("u")
       self.set_type("o")
@@ -326,9 +326,9 @@ class Halt < Instr
 end
 
 class IOInput < Instr
-  def type
+  def calculate_type
     var = self.nts[0]
-    if var.type.eql?("s")
+    if var.calculate_type.eql?("s")
       @error_message = "io inputs have to be saved in var of type number! '#{var.terminals[1]}' is not of type number!"
       @type = "e"
     else
@@ -340,9 +340,9 @@ class IOInput < Instr
 end
 
 class IOOutput < Instr
-  def type
+  def calculate_type
     var = self.nts[0]
-    if var.type.eql?("n") or var.type.eql?("s")
+    if var.calculate_type.eql?("n") or var.calculate_type.eql?("s")
       @type = "c"
     end
     @type
@@ -366,7 +366,7 @@ end
 #UserDefinedName
 
 class Assign < Instr
-  def type
+  def calculate_type
     var = self.nts[0]
     if self.nts.length == 1
       self.type_var_string(var)
@@ -378,8 +378,8 @@ class Assign < Instr
     @type
   end
 
-  def type_var_string(var)
-    if var.type.eql?("n")
+  def calculate_type_var_string(var)
+    if var.calculate_type.eql?("n")
       @error_message = "'#{var.terminals[1]}' is of type number and you may not assign a string to it!"
       @type = "e"
     else
@@ -388,22 +388,22 @@ class Assign < Instr
     end
   end
 
-  def type_var_var(left, right)
-    if left.type.eql?("n") and right.type.eql?("s")
+  def calculate_type_var_var(left, right)
+    if left.calculate_type.eql?("n") and right.calculate_type.eql?("s")
       @error_message= "'#{var.terminals[1]}' is of type number and you may not assign string variable '#{left.terminals[1]}' to it!"
       @type = "e"
       return
-    elsif right.type.eql?("n") and left.type.eql?("s")
+    elsif right.calculate_type.eql?("n") and left.calculate_type.eql?("s")
       @error_message= "'#{var.terminals[1]}' is of type number and may not be assigned to string variable '#{left.terminals[1]}'!"
       @type = "e"
       return
-    elsif left.type.eql?("n") and not right.type.eql?("s")
+    elsif left.calculate_type.eql?("n") and not right.calculate_type.eql?("s")
       right.set_type("n")
-    elsif right.type.eql?("n") and not left.type.eql?("s")
+    elsif right.calculate_type.eql?("n") and not left.calculate_type.eql?("s")
       left.set_type("n")
-    elsif left.type.eql?("s") and not right.type.eql?("n")
+    elsif left.calculate_type.eql?("s") and not right.calculate_type.eql?("n")
       right.set_type.eql?("s")
-    elsif right.type.eql?("s") and not left.type.eql?("n")
+    elsif right.calculate_type.eql?("s") and not left.calculate_type.eql?("n")
       left.set_type.eql?("s")
     else
       left.set_type("o")
@@ -412,11 +412,11 @@ class Assign < Instr
     @type = "c"
   end
 
-  def type_var_numexpr(var, numexpr)
-    if var.type.eql?("s")
+  def calculate_type_var_numexpr(var, numexpr)
+    if var.calculate_type.eql?("s")
       @error_message = "may not assign a number to string var '#{var.terminals[1]}'"
       @type = "e"
-    elsif numexpr.type.eql?("n")
+    elsif numexpr.calculate_type.eql?("n")
       var.set_type("n")
       @type = "c"
     end
@@ -428,11 +428,11 @@ class CondLoop < Token
 end
 
 class WhileLoop < CondLoop #instr
-  def type
+  def calculate_type
     bool = self.nts[0]
     code = self.nts[1]
-    bool_valid = (bool.type.eql?("b") or bool.type.eql?("f"))
-    code_valid = code.type.eql?("c")
+    bool_valid = (bool.calculate_type.eql?("b") or bool.calculate_type.eql?("f"))
+    code_valid = code.calculate_type.eql?("c")
     if bool.is_a?(BoolNegation) and bool.child_is_f
       @warning = "Warning! Infinite Loop!"
     end
@@ -442,7 +442,7 @@ class WhileLoop < CondLoop #instr
     @type
   end
 
-  def prune_based_on_type
+  def mark_d_or_prune_based_on_type
     super
     bool = self.nts[0]
     if bool.peek_type.eql?("f")
@@ -462,17 +462,17 @@ class ForLoop < CondLoop #instr
     c[5].does_not_contain_assignment(var_name)
   end
 
-  def type
+  def calculate_type
     vars = self.nts
     code = vars.pop()
-    if code.type.eql?("c")
+    if code.calculate_type.eql?("c")
       @type = "c"
       vars.each do |var|
         var.set_type("n")
       end
     end
     vars.each do |var|
-      if var.type.eql?("s")
+      if var.calculate_type.eql?("s")
         @error_message = "for-loop control variables may not be of type string! '#{var.terminals[1]}' violates this rule!"
         @type = "e"
       end
@@ -480,7 +480,7 @@ class ForLoop < CondLoop #instr
     @type
   end
 
-  def prune_based_on_type
+  def mark_d_or_prune_based_on_type
     super
     vars = self.nts
     if vars[1].terminals[0].eql?(vars[2].terminals[0])
@@ -490,7 +490,7 @@ class ForLoop < CondLoop #instr
 end
 
 class CondBranch < Token
-  def prune_based_on_type
+  def mark_d_or_prune_based_on_type
     super
     bool = self.nts[0]
     code = self.nts[1]
@@ -503,19 +503,19 @@ class CondBranch < Token
 end
 
 class IfThenElse < CondBranch #instr
-  def type
+  def calculate_type
     bool = self.nts[0]
     then_code = self.nts[1]
     else_code = self.nts[2]
-    bool_valid = (bool.type.eql?("b") or bool.type.eql?("f"))
-    code_valid = (then_code.type.eql?("c") and else_code.type.eql?("c"))
+    bool_valid = (bool.calculate_type.eql?("b") or bool.calculate_type.eql?("f"))
+    code_valid = (then_code.calculate_type.eql?("c") and else_code.calculate_type.eql?("c"))
     if bool_valid and code_valid
       @type = "c"
     end
     @type
   end
 
-  def prune_based_on_type
+  def mark_d_or_prune_based_on_type
     super
     bool = self.nts[0]
     else_code = self.nts[2]
@@ -528,11 +528,11 @@ class IfThenElse < CondBranch #instr
 end
 
 class IfThen < CondBranch #instr
-  def type
+  def calculate_type
     bool = self.nts[0]
     code = self.nts[1]
-    bool_valid = (bool.type.eql?("f") or bool.type.eql?("b"))
-    code_valid = code.type.eql?("c")
+    bool_valid = (bool.calculate_type.eql?("f") or bool.calculate_type.eql?("b"))
+    code_valid = code.calculate_type.eql?("c")
     if bool_valid and code_valid
       @lgr.info("TRUE")
       @type = "c"
@@ -540,7 +540,7 @@ class IfThen < CondBranch #instr
     @type
   end
 
-  def prune_based_on_type
+  def mark_d_or_prune_based_on_type
     super
     bool = self.nts[0]
     @lgr.info("!!!!! #{bool.type}")
@@ -552,7 +552,7 @@ class IfThen < CondBranch #instr
 end
 
 class Numexpr < Token
-  def type
+  def calculate_type
     if self.nts.length == 0
       self.type_integer
     elsif self.nts[0].is_a?(Var)
@@ -571,12 +571,12 @@ class Numexpr < Token
     self.nts[0]
   end
 
-  def type_integer
+  def calculate_type_integer
     @type = "n"
   end
 
-  def type_var(var)
-    if var.type.eql?("s")
+  def calculate_type_var(var)
+    if var.calculate_type.eql?("s")
       @error_message = "numexpr may not have var of type string! '#{var.terminals[1]}' breaks this rule!"
       @type = "e"
     else
@@ -585,8 +585,8 @@ class Numexpr < Token
     end
   end
 
-  def type_calc(calc)
-    if calc.type.eql?("n")
+  def calculate_type_calc(calc)
+    if calc.calculate_type.eql?("n")
       @type = "n"
     end
   end
@@ -594,10 +594,10 @@ end
 # VAR, Integer, CALC
 
 class Calc < Token
-  def type
+  def calculate_type
     left  = self.nts[0]
     right = self.nts[1]
-    if left.type.eql?("n") and right.type.eql?("n")
+    if left.calculate_type.eql?("n") and right.calculate_type.eql?("n")
       @type = "n"
     end
     @type
@@ -618,7 +618,7 @@ end
 
 class BoolEq < Bool
   # VAR, BOOL, NUMEXPR
-  def type
+  def calculate_type
     self.attempt_reduce_to_var_var
     left = self.nts[0]
     right = self.nts[1]
@@ -645,20 +645,20 @@ class BoolEq < Bool
     end
   end
 
-  def type_var_var(left, right)
-    if left.type.eql?("n") and right.type.eql?("s")
+  def calculate_type_var_var(left, right)
+    if left.calculate_type.eql?("n") and right.calculate_type.eql?("s")
       @type = "f"
       return
-    elsif right.type.eql?("n") and left.type.eql?("s")
+    elsif right.calculate_type.eql?("n") and left.calculate_type.eql?("s")
       @type = "f"
       return
-    elsif left.type.eql?("n") and not right.type.eql?("s")
+    elsif left.calculate_type.eql?("n") and not right.calculate_type.eql?("s")
       right.set_type("n")
-    elsif right.type.eql?("n") and not left.type.eql?("s")
+    elsif right.calculate_type.eql?("n") and not left.calculate_type.eql?("s")
       left.set_type("n")
-    elsif left.type.eql?("s") and not right.type.eql?("n")
+    elsif left.calculate_type.eql?("s") and not right.calculate_type.eql?("n")
       right.set_type.eql?("s")
-    elsif right.type.eql?("s") and not left.type.eql?("n")
+    elsif right.calculate_type.eql?("s") and not left.calculate_type.eql?("n")
       left.set_type.eql?("s")
     else
       left.set_type("o")
@@ -667,26 +667,26 @@ class BoolEq < Bool
     @type = "b"
   end
 
-  def type_bool_bool(left, right)
-    left_bool = (left.type.eql?("b") or left.type.eql?("f"))
-    right_bool = (right.type.eql?("b") or right.type.eql?("f"))
+  def calculate_type_bool_bool(left, right)
+    left_bool = (left.calculate_type.eql?("b") or left.calculate_type.eql?("f"))
+    right_bool = (right.calculate_type.eql?("b") or right.calculate_type.eql?("f"))
     if left_bool and right_bool
       @type = "b"
     end
   end
 
-  def type_numexpr_numexpr(left, right)
-    if left.type.eql?("n") and right.type.eql?("n")
+  def calculate_type_numexpr_numexpr(left, right)
+    if left.calculate_type.eql?("n") and right.calculate_type.eql?("n")
       @type = "b"
     end
   end
 end
 
 class BoolLessThan < Bool
-  def type
+  def calculate_type
     var_left = self.nts[0]
     var_right = self.nts[1]
-    if var_left.type.eql?("s") or var_right.type.eql?("s")
+    if var_left.calculate_type.eql?("s") or var_right.calculate_type.eql?("s")
       @type_error = "less than comparison may not operate on strings!"
       @type = "e"
     else
@@ -699,10 +699,10 @@ class BoolLessThan < Bool
 end
 
 class BoolGreaterThan < Bool
-  def type
+  def calculate_type
     var_left = self.nts[0]
     var_right = self.nts[1]
-    if var_left.type.eql?("s") or var_right.type.eql?("s")
+    if var_left.calculate_type.eql?("s") or var_right.calculate_type.eql?("s")
       @type_error = "greater than comparison may not operate on strings!"
       @type = "e"
     else
@@ -715,9 +715,9 @@ class BoolGreaterThan < Bool
 end
 
 class BoolNegation < Bool
-  def type
+  def calculate_type
     bool = self.nts[0]
-    if bool.type.eql?("b") or bool.type.eql?("f")
+    if bool.calculate_type.eql?("b") or bool.calculate_type.eql?("f")
       @type = "b"
     end
     @type
@@ -730,16 +730,16 @@ class BoolNegation < Bool
 end
 
 class BoolAnd < Bool
-  def type
+  def calculate_type
     left = self.nts[0]
     right = self.nts[1]
-    if left.type.eql?("f") and right.type.eql?("b")
+    if left.calculate_type.eql?("f") and right.calculate_type.eql?("b")
       @type = "f"
-    elsif left.type.eql?("b") and right.type.eql?("f")
+    elsif left.calculate_type.eql?("b") and right.calculate_type.eql?("f")
       @type = "f"
-    elsif left.type.eql?("f") and right.type.eql?("f")
+    elsif left.calculate_type.eql?("f") and right.calculate_type.eql?("f")
       @type = "f"
-    elsif left.type.eql?("b") and right.type.eql?("b")
+    elsif left.calculate_type.eql?("b") and right.calculate_type.eql?("b")
       @type = "b"
     end
     @type
@@ -747,11 +747,11 @@ class BoolAnd < Bool
 end
 
 class BoolOr < Bool
-  def type
+  def calculate_type
     left = self.nts[0]
     right = self.nts[1]
-    left_bool = (left.type.eql?("b") or left.type.eql?("f"))
-    right_bool = (right.type.eql?("b") or right.type.eql?("f"))
+    left_bool = (left.calculate_type.eql?("b") or left.calculate_type.eql?("f"))
+    right_bool = (right.calculate_type.eql?("b") or right.calculate_type.eql?("f"))
     if left_bool and right_bool
       @type = "b"
     end
