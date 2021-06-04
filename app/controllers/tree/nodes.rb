@@ -24,6 +24,10 @@ class Token
     @nt.reverse!
   end
 
+  def print_flow
+    "#{@flow}\n"
+  end
+
   def has_warning?
     not @warning.eql?("")
   end
@@ -303,10 +307,6 @@ class Var < Token #NOT instr, only if part of assign
     @has_init = false
     @flow = "-"
     @symbol_table_token_link = nil
-  end
-
-  def print_flow
-    "#{@flow}\n"
   end
 
   def getUserDefinedName
