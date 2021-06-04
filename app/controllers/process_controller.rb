@@ -22,7 +22,7 @@ class ProcessController < ApplicationController
 			parse_info = parse(lexresp[2]) # send token list for check if in language
 			if not parse_info[0]
 				@output.push("SYNTAX ERROR!")
-				@output += parse_info[2]
+				#@output += parse_info[2]
 				return
 			end
 		rescue
