@@ -350,9 +350,10 @@ end
 class IOOutput < Instr
   def calculate_type
     var = self.nts[0]
-    if var.calculate_type.eql?("n") or var.calculate_type.eql?("s")
-      @type = "c"
+    unless var.calculate_type.eql?("n") or var.calculate_type.eql?("s")
+      var.set_type("o")
     end
+    @type = "c"
     @type
   end
 end
