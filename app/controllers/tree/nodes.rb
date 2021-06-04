@@ -425,9 +425,11 @@ class Assign < Instr
     if var.calculate_type.eql?("s")
       @error_message = "may not assign a number to string var '#{var.terminals[1]}'"
       @type = "e"
-    elsif numexpr.calculate_type.eql?("n")
+    else
       var.set_type("n")
-      @type = "c"
+      if numexpr.calculate_type.eql?("n")
+        @type = "c"
+      end
     end
   end
 end
