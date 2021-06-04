@@ -24,6 +24,9 @@ class Token
     @nt.reverse!
   end
 
+  def print_flow
+  end
+
   def has_warning?
     not @warning.eql?("")
   end
@@ -266,7 +269,7 @@ class Token
       counter = c.length - b.length
       b += " "*counter
     end
-    return " #{peek_type()}\n #{@scope}\n" + a + " |  \n" + b + " |  \n" + c + " |"
+    return "#{print_flow}#{peek_type()}\n #{@scope}\n" + a + " |  \n" + b + " |  \n" + c + " |"
   end
 end
 
@@ -301,7 +304,12 @@ class Var < Token #NOT instr, only if part of assign
   def initialize(lhs, rhs, id)
     super
     @has_init = false
+    @flow = "-"
     @symbol_table_token_link = nil
+  end
+
+  def print_flow
+    "#{@flow}\n"
   end
 
   def getUserDefinedName

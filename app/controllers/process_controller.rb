@@ -18,11 +18,15 @@ class ProcessController < ApplicationController
 		end
 
 		@output.push("parsing...")
-		parse_info = parse(lexresp[2]) # send token list for check if in language
-		if not parse_info[0]
+		begin
+			parse_info = parse(lexresp[2]) # send token list for check if in language
+			if not parse_info[0]
+				@output.push("SYNTAX ERROR!")
+				@output += parse_info[2]
+				return
+			end
+		rescue
 			@output.push("SYNTAX ERROR!")
-			@output += parse_info[2]
-			return
 		end
 		begin
 			treeManager = parse_info[1]
