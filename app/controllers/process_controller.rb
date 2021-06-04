@@ -27,6 +27,7 @@ class ProcessController < ApplicationController
 			end
 		rescue
 			@output.push("SYNTAX ERROR!")
+			return
 		end
 		begin
 			treeManager = parse_info[1]
