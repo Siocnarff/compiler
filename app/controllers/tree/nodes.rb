@@ -24,9 +24,6 @@ class Token
     @nt.reverse!
   end
 
-  def print_flow
-  end
-
   def has_warning?
     not @warning.eql?("")
   end
