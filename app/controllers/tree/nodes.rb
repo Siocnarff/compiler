@@ -4,6 +4,7 @@ class Token
     @warning = ""
     @error_message = ""
     @type = "u"
+    @flow = "-"
     @parent = nil
     @deleted = false
     @proc_scope = "0"
@@ -305,7 +306,6 @@ class Var < Token #NOT instr, only if part of assign
   def initialize(lhs, rhs, id)
     super
     @has_init = false
-    @flow = "-"
     @symbol_table_token_link = nil
   end
 
