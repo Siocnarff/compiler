@@ -410,9 +410,9 @@ class Assign < Instr
     elsif right.calculate_type.eql?("n") and not left.calculate_type.eql?("s")
       left.set_type("n")
     elsif left.calculate_type.eql?("s") and not right.calculate_type.eql?("n")
-      right.set_type.eql?("s")
+      right.set_type("s")
     elsif right.calculate_type.eql?("s") and not left.calculate_type.eql?("n")
-      left.set_type.eql?("s")
+      left.set_type("s")
     else
       left.set_type("o")
       right.set_type("o")
@@ -664,9 +664,9 @@ class BoolEq < Bool
     elsif right.calculate_type.eql?("n") and not left.calculate_type.eql?("s")
       left.set_type("n")
     elsif left.calculate_type.eql?("s") and not right.calculate_type.eql?("n")
-      right.set_type.eql?("s")
+      right.set_type("s")
     elsif right.calculate_type.eql?("s") and not left.calculate_type.eql?("n")
-      left.set_type.eql?("s")
+      left.set_type("s")
     else
       left.set_type("o")
       right.set_type("o")
