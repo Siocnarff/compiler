@@ -381,7 +381,7 @@ class Var < Token  #NOT instr, only if part of assign
     if is_safe(safety_key)
       @symbol_table_token_link.read_flow
     else
-      raise "for your safety all values must be initialized OUTSIDE blocks of code that might not execute!"
+      raise "for your safety all var #{self.terminals[1]} must be initialized OUTSIDE blocks of code that might not execute!"
     end
   end
 
