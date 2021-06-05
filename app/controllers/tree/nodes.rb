@@ -30,7 +30,7 @@ class Token
     @flow
   end
 
-  def trace_flow(callback, safety_key = "SAFE")
+  def trace_flow(callback, safety_key)
     self.nts.each do |child|
       child.trace_flow(callback, safety_key)
     end
@@ -293,7 +293,7 @@ end
 class Prog < Token
   def trace_flow(callback, safety_key)
     code = self.nts[0]
-    code.trace_flow(callback = self)
+    code.trace_flow(callback = self, safety_key)
   end
 
   def trace_flow_in_proc(name, callback, safety_key)
@@ -349,7 +349,7 @@ class Var < Token  #NOT instr, only if part of assign
     " f: '#{@symbol_table_token_link.read_flow}'"
   end
 
-  def set_flow(value, safety_key = "SAFE")
+  def set_flow(value, safety_key)
     @symbol_table_token_link.set_safety_key(safety_key)
     @symbol_table_token_link.set_flow(value)
   end
@@ -398,7 +398,7 @@ end
 class IOInput < Instr
   def trace_flow(callback, safety_key)
     var = self.nts[0]
-    var.set_flow("+")
+    var.set_flow("+", safety_key)
   end
 
   def calculate_type
@@ -469,8 +469,7 @@ class Assign < Instr
         end
       end
     end
-    var.set_safety_key(safety_key)
-    var.set_flow("+")
+    var.set_flow("+", safety_key)
   end
 
   def calculate_type

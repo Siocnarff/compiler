@@ -116,6 +116,11 @@ class TokenGenerator
     return @tokens.last
   end
 
+
+  def traceValueFlow
+    @tokens.last.trace_flow(nil, "SAFE")
+  end
+
   def getAllWarnings
     warnings = Array.new
     @tokens.array.each do |token|

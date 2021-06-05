@@ -46,6 +46,8 @@ class ProcessController < ApplicationController
 			@output.push("pruning away dead code...")
 			treeManager.pruneBasedOnType
 			warnings = treeManager.getAllWarnings
+			@output.push("doing value flow analysis...")
+			treeManager.traceValueFlow
 			@tree = treeManager.drawTree
 			if warnings.length > 0
 				@output.push("---------------------------------------------------------------------------------------------------------------")
