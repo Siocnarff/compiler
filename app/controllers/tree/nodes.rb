@@ -361,7 +361,7 @@ class Var < Token  #NOT instr, only if part of assign
           if @symbol_table_token_link.get_set_count == 1
             @symbol_table_token_link.set_set_count(2)
           end
-        else
+        elsif not @symbol_table_token_link.get_set_count == 3
           @symbol_table_token_link.set_set_count(1)
         end
       end
