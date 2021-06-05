@@ -594,6 +594,7 @@ class ForLoop < CondLoop #instr
       child.trace_flow(callback, safety_key)
     end
     code.trace_flow(callback, safety_key)
+    @@safety_key_source += 1
   end
 
   def raise_issue_if_vars_invalid
