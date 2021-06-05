@@ -359,7 +359,7 @@ class Var < Token  #NOT instr, only if part of assign
   end
 
   def read_flow(safety_key)
-    if is_safe(key)
+    if is_safe(safety_key)
       @symbol_table_token_link.read_flow
     else
       raise "for your safety all values must be initialized OUTSIDE blocks of code that might not execute!"
