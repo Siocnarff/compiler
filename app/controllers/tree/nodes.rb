@@ -679,6 +679,13 @@ class Numexpr < Token
     @flow = "-"
   end
 
+  def trace_flow(callback, safety_key)
+    super
+    unless self.all_vars_have_values(callback, safety_key)
+      raise "not all vars have values!"
+    end
+  end
+
   def all_vars_have_values(callback, safety_key)
     unless self.nts.length == 0
       target = self.nts[0]
