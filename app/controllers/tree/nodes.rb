@@ -682,11 +682,11 @@ class Numexpr < Token
   def all_vars_have_values(callback, safety_key)
     unless self.nts.length == 0
       target = self.nts[0]
-      if target.is_a?(Var) and target.read_flow(saftey_key).eql?("-")
+      if target.is_a?(Var) and target.read_flow(safety_key).eql?("-")
         return false
       elsif target.is_a?(Calc)
         target.trace_flow(callback, safety_key)
-        if target.read_flow(saftey_key).eql?("-")
+        if target.read_flow(safety_key).eql?("-")
           return false
         end
       end
@@ -741,7 +741,7 @@ class Calc < Token
     super
     left = self.nts[0]
     right = self.nts[1]
-    if right.read_flow(saftey_key).eql?("+") and left.read_flow(saftey_key).eql?("+")
+    if right.read_flow(safety_key).eql?("+") and left.read_flow(safety_key).eql?("+")
       @flow = "+"
     end
   end
