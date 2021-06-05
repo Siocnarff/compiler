@@ -26,6 +26,10 @@ class Token
     @nt.reverse!
   end
 
+  def read_flow(safety_key)
+    @flow
+  end
+
   def trace_flow(callback, safety_key = "SAFE")
     self.nts.each do |child|
       child.trace_flow(callback, safety_key)
@@ -33,7 +37,11 @@ class Token
   end
 
   def print_flow
-    "#{@flow}\n"
+    if @flow.length > 0
+      return " f: '#{@flow}'"
+    else
+      return ""
+    end
   end
 
   def has_warning?
@@ -278,7 +286,7 @@ class Token
       counter = c.length - b.length
       b += " "*counter
     end
-    return "#{print_flow}#{peek_type()}\n #{@scope}\n" + a + " |  \n" + b + " |  \n" + c + " |"
+    return "#{peek_type()} #{print_flow()}\n #{@scope}\n" + a + " |  \n" + b + " |  \n" + c + " |"
   end
 end
 
@@ -335,6 +343,10 @@ class Var < Token  #NOT instr, only if part of assign
 
   def getUserDefinedName
     return @nt[1][1]
+  end
+
+  def print_flow
+    " f: '#{@symbol_table_token_link.read_flow}'"
   end
 
   def set_flow(value, safety_key = "SAFE")
@@ -525,6 +537,10 @@ class CondLoop < Token
 end
 
 class WhileLoop < CondLoop #instr
+  def trace_flow(callback, safety_key)
+    super(callback, "#{@@safety_key_source += 1}")
+  end
+
   def calculate_type
     bool = self.nts[0]
     code = self.nts[1]
@@ -549,6 +565,13 @@ class WhileLoop < CondLoop #instr
 end
 
 class ForLoop < CondLoop #instr
+  def trace_flow(callback, safety_key)
+    if self.nts[2].read_flow(safety_key).eql?("-")
+      raise "var #{self.nts[2].terminals[1]} being compared against in for loop has no value yet!"
+    end
+    super(callback, "#{@@safety_key_source += 1}")
+  end
+
   def raise_issue_if_vars_invalid
     c = self.nts
     var_name = c[0].terminals[0];
@@ -625,6 +648,10 @@ class IfThenElse < CondBranch #instr
 end
 
 class IfThen < CondBranch #instr
+  def trace_flow(callback, safety_key)
+    super(callback, "#{@@safety_key_source += 1}")
+  end
+
   def calculate_type
     bool = self.nts[0]
     code = self.nts[1]
@@ -740,9 +767,9 @@ class MultCalc < Calc
 end
 
 class Bool < Token
-  def initialize(lhs, rhs, id)
+  def trace_flow(callback, safety_key)
     super
-    @flow = ""
+    @flow = "+"
   end
 end
 
