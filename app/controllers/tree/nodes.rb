@@ -1,5 +1,7 @@
 class Token
   def initialize(lhs, rhs, id)
+    @@needsToRepeat = false
+    @@set = false
     @@safety_key_source = 0
     @lgr = Logger.new("#{Rails.root}/log/test2.log")
     @warning = ""
@@ -350,11 +352,28 @@ class Var < Token  #NOT instr, only if part of assign
   end
 
   def set_flow(value, safety_key)
+    if @@needsToRepeat
+      if not @symbol_table_token_link.read_flow.eql?("+")
+        @symbol_table_token_link.set_set_count(0)
+      end
+      if value.eql?("+")
+        if @@set
+          if @symbol_table_token_link.get_set_count == 1
+            @symbol_table_token_link.set_set_count(2)
+          end
+        else
+          @symbol_table_token_link.set_set_count(1)
+        end
+      end
+    end
     @symbol_table_token_link.set_safety_key(safety_key)
     @symbol_table_token_link.set_flow(value)
   end
 
   def is_safe(key)
+    if @symbol_table_token_link.get_set_count < 2
+      raise "var #{self.terminals[1]} not defined in both branches of 'if then else'"
+    end
     return (read_safety.eql?("SAFE") or read_safety.eql?(key))
   end
 
@@ -623,6 +642,19 @@ class CondBranch < Token
 end
 
 class IfThenElse < CondBranch #instr
+  def trace_flow(callback, safety_key)
+    bool = self.nts[0]
+    codeA = self.nts[1]
+    codeB = self.nts[2]
+    bool.trace_flow(callback, safety_key)
+    @@needsToRepeat = true
+    codeA.trace_flow(callback, safety_key)
+    @@set = true
+    codeB.trace_flow(callback, safety_key)
+    @@needsToRepeat = false
+    @@set = false
+  end
+
   def calculate_type
     bool = self.nts[0]
     then_code = self.nts[1]

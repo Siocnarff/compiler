@@ -125,6 +125,7 @@ end
 
 class TableEntry
   def initialize(name, internal_name, is_var, is_proc_init, scope_string)
+    @set_count = 3
     @safety_key = "SAFE"
     @flow = "-"
     @user_defined_name = name
@@ -137,6 +138,14 @@ class TableEntry
     else
       @type = "p"
     end
+  end
+
+  def set_set_count(value)
+    @set_count = value
+  end
+
+  def get_set_count
+    @set_count
   end
 
   def get_type
