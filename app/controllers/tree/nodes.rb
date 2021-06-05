@@ -565,6 +565,7 @@ end
 
 class ForLoop < CondLoop #instr
   def trace_flow(callback, safety_key)
+    self.nts[0].set_flow("+", safety_key)
     if self.nts[2].read_flow(safety_key).eql?("-")
       raise "var #{self.nts[2].terminals[1]} being compared against in for loop has no value yet!"
     end
