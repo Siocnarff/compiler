@@ -437,7 +437,7 @@ class IOOutput < Instr
   def trace_flow(callback, safety_key)
     var = self.nts[0]
     if var.read_flow(safety_key).eql?("-")
-      raise "error: #{var.terminals[1]} has no value at output point!"
+      raise "error: #{var.terminals[1]} has no gauranteed value at output point!"
     end
   end
 
