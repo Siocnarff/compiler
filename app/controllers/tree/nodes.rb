@@ -588,7 +588,12 @@ class ForLoop < CondLoop #instr
     if self.nts[2].read_flow(safety_key).eql?("-")
       raise "var #{self.nts[2].terminals[1]} being compared against in for loop has no value yet!"
     end
-    super(callback, "#{@@safety_key_source += 1}")
+    vars = self.nts
+    code = vars.pop
+    vars.each do |child|
+      child.trace_flow(callback, safety_key)
+    end
+    code.trace_flow(callback, safety_key)
   end
 
   def raise_issue_if_vars_invalid
