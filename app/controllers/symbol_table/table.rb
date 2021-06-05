@@ -125,6 +125,8 @@ end
 
 class TableEntry
   def initialize(name, internal_name, is_var, is_proc_init, scope_string)
+    @safety_key = "SAFE"
+    @flow = "-"
     @user_defined_name = name
     @internal_name = internal_name
     @is_var = is_var
@@ -143,6 +145,22 @@ class TableEntry
 
   def set_type(type)
     @type = type
+  end
+
+  def set_safety_key(key)
+    @safety_key = key
+  end
+
+  def set_flow(value)
+    @flow = value
+  end
+
+  def read_flow
+    @flow
+  end
+
+  def read_safety
+    @safety_key
   end
 
   def internal_name

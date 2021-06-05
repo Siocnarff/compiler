@@ -25,8 +25,9 @@ class ProcessController < ApplicationController
 				#@output += parse_info[2]
 				return
 			end
-		rescue
+		rescue => e
 			@output.push("SYNTAX ERROR!")
+			@output.push(e)
 			return
 		end
 		begin

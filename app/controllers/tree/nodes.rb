@@ -1,5 +1,6 @@
 class Token
   def initialize(lhs, rhs, id)
+    @@safety_key_source = 0
     @lgr = Logger.new("#{Rails.root}/log/test2.log")
     @warning = ""
     @error_message = ""
@@ -23,6 +24,12 @@ class Token
     end
     @nt.push(lhs[0])
     @nt.reverse!
+  end
+
+  def trace_flow(callback, safety_key = "SAFE")
+    self.nts.each do |child|
+      child.trace_flow(callback, safety_key)
+    end
   end
 
   def print_flow
@@ -276,12 +283,29 @@ class Token
 end
 
 class Prog < Token
+  def trace_flow(callback, safety_key)
+    code = self.nts[0]
+    code.trace_flow(callback = self)
+  end
+
+  def trace_flow_in_proc(name, callback, safety_key)
+    unless self.nts.length < 2
+      self.nts[1].trace_flow_in_proc(name, callback, safety_key)
+    end
+  end
 end
 
 class Code < Token
 end
 
 class ProcDefs < Token
+  def trace_flow_in_proc(name, callback, safety_key)
+    self.nts.each do |procdef|
+      if procdef.terminals[0].eql?(name)
+        procdef.trace_flow(callback, safety_key)
+      end
+    end
+  end
 end
 
 class Procc < Token
@@ -302,16 +326,36 @@ end
 class Instr < Token
 end
 
-class Var < Token #NOT instr, only if part of assign
+class Var < Token  #NOT instr, only if part of assign
   def initialize(lhs, rhs, id)
     super
-    @flow = "-"
     @has_init = false
     @symbol_table_token_link = nil
   end
 
   def getUserDefinedName
     return @nt[1][1]
+  end
+
+  def set_flow(value, safety_key = "SAFE")
+    @symbol_table_token_link.set_safety_key(safety_key)
+    @symbol_table_token_link.set_flow(value)
+  end
+
+  def is_safe(key)
+    return (read_safety.eql?("SAFE") or read_safety.eql?(key))
+  end
+
+  def read_flow(safety_key)
+    if is_safe(key)
+      @symbol_table_token_link.read_flow
+    else
+      raise "for your safety all values must be initialized OUTSIDE blocks of code that might not execute!"
+    end
+  end
+
+  def read_safety
+    @symbol_table_token_link.read_safety
   end
 
   def set_token_link(token_link)
@@ -340,6 +384,11 @@ class Halt < Instr
 end
 
 class IOInput < Instr
+  def trace_flow(callback, safety_key)
+    var = self.nts[0]
+    var.set_flow("+")
+  end
+
   def calculate_type
     var = self.nts[0]
     if var.calculate_type.eql?("s")
@@ -354,6 +403,13 @@ class IOInput < Instr
 end
 
 class IOOutput < Instr
+  def trace_flow(callback, safety_key)
+    var = self.nts[0]
+    if var.read_flow(safety_key).eql?("-")
+      raise "error: #{var.terminals[1]} has no value at output point!"
+    end
+  end
+
   def calculate_type
     var = self.nts[0]
     unless var.calculate_type.eql?("n") or var.calculate_type.eql?("s")
@@ -370,6 +426,11 @@ class Call < Instr
     @in_wrong_tree_error = false
   end
 
+  def trace_flow(callback, safety_key)
+    proc_name = self.terminals[0]
+    callback.trace_flow_in_proc(proc_name, callback, safety_key)
+  end
+
   def tag_in_wrong_tree
     @in_wrong_tree_error = true
   end
@@ -381,6 +442,25 @@ end
 #UserDefinedName
 
 class Assign < Instr
+  def trace_flow(callback, safety_key)
+    var = self.nts[0]
+    unless self.nts.length == 1
+      if self.nts[1].is_a?(Var)
+        target_var = self.nts[1]
+        if target_var.read_flow(safety_key).eql?("-")
+          raise "#{var.terminals[0]} cannot be assigned to #{target_var.terminals[0]} as this var has no value yet!"
+        end
+      elsif self.nts[1].is_a?(Numexpr)
+        numexpr = self.nts[1]
+        unless numexpr.all_vars_have_values(callback, safety_key)
+          raise "#{var.terminals[0]} cannot be assigned a value here, since not all vars in numexpr have values yet!"
+        end
+      end
+    end
+    var.set_safety_key(safety_key)
+    var.set_flow("+")
+  end
+
   def calculate_type
     var = self.nts[0]
     if self.nts.length == 1
@@ -429,7 +509,7 @@ class Assign < Instr
 
   def type_var_numexpr(var, numexpr)
     if var.calculate_type.eql?("s")
-      @error_message = "may not assign a number to string var '#{var.terminals[1]}'"
+      @error_message = "may not assign a number to string var #{var.terminals[1]}"
       @type = "e"
     else
       var.set_type("n")
@@ -573,6 +653,22 @@ class Numexpr < Token
     @flow = "-"
   end
 
+  def all_vars_have_values(callback, safety_key)
+    unless self.nts.length == 0
+      target = self.nts[0]
+      if target.is_a?(Var) and target.read_flow(saftey_key).eql?("-")
+        return false
+      elsif target.is_a?(Calc)
+        target.trace_flow(callback, safety_key)
+        if target.read_flow(saftey_key).eql?("-")
+          return false
+        end
+      end
+    end
+    @flow = "+"
+    true
+  end
+
   def calculate_type
     if self.nts.length == 0
       self.type_integer
@@ -615,6 +711,15 @@ end
 # VAR, Integer, CALC
 
 class Calc < Token
+  def trace_flow(callback, safety_key)
+    super
+    left = self.nts[0]
+    right = self.nts[1]
+    if right.read_flow(saftey_key).eql?("+") and left.read_flow(saftey_key).eql?("+")
+      @flow = "+"
+    end
+  end
+
   def calculate_type
     left  = self.nts[0]
     right = self.nts[1]
