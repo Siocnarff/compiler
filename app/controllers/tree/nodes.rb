@@ -4,7 +4,7 @@ class Token
     @warning = ""
     @error_message = ""
     @type = "u"
-    @flow = "-"
+    @flow = ""
     @parent = nil
     @deleted = false
     @proc_scope = "0"
@@ -305,6 +305,7 @@ end
 class Var < Token #NOT instr, only if part of assign
   def initialize(lhs, rhs, id)
     super
+    @flow = "-"
     @has_init = false
     @symbol_table_token_link = nil
   end
@@ -567,6 +568,11 @@ class IfThen < CondBranch #instr
 end
 
 class Numexpr < Token
+  def initialize(lhs, rhs, id)
+    super
+    @flow = "-"
+  end
+
   def calculate_type
     if self.nts.length == 0
       self.type_integer
@@ -629,6 +635,10 @@ class MultCalc < Calc
 end
 
 class Bool < Token
+  def initialize(lhs, rhs, id)
+    super
+    @flow = ""
+  end
 end
 
 class BoolEq < Bool
