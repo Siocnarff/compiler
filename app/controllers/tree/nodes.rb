@@ -374,6 +374,9 @@ class Var < Token  #NOT instr, only if part of assign
     if @symbol_table_token_link.get_set_count < 2
       raise "var #{self.terminals[1]} not defined in both branches of 'if then else'"
     end
+    if @symbol_table_token_link.read_flow.eql("+")
+      return true
+    end
     return (read_safety.eql?("SAFE") or read_safety.eql?(key))
   end
 
