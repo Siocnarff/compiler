@@ -179,7 +179,7 @@ class TokenGenerator
       if proc.is_a?(Procc) and proc.terminal_types[0].eql?("UDIN")
         proc_name = proc.terminals[0]
         has_mates = false
-        new_name = "p#{id_source + 1}"
+        new_name = "P#{id_source + 1}"
         @tokens.array.each do |call|
 
           if call.is_a?(Call)

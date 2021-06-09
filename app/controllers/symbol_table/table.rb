@@ -104,7 +104,7 @@ private
     unless is_var
       return name
     end
-    "v#{@var_name_id_source += 1}"
+    "V#{@var_name_id_source += 1}"
   end
 end
 
