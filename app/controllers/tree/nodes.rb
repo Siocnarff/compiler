@@ -374,10 +374,14 @@ class Var < Token  #NOT instr, only if part of assign
     if @symbol_table_token_link.get_set_count < 2
       raise "var #{self.terminals[1]} not defined in both branches of 'if then else'"
     end
-    if @symbol_table_token_link.read_flow.eql?("+")
-      return true
+    target_key = read_safety()
+    if target_key.length <= key.length
+      @lgr.info(key.first(target_key.length))
+      @lgr.info(target_key)
+      @lgr.info("===========")
+      return key.first(target_key.length).eql?(target_key)
     end
-    return (read_safety.eql?("SAFE") or read_safety.eql?(key))
+    return false
   end
 
   def read_flow(safety_key)
@@ -482,12 +486,12 @@ class Assign < Instr
       if self.nts[1].is_a?(Var)
         target_var = self.nts[1]
         if target_var.read_flow(safety_key).eql?("-")
-          raise "#{var.terminals[0]} cannot be assigned to #{target_var.terminals[0]} as this var has no value yet!"
+          raise "#{var.terminals[1]} cannot be assigned to #{target_var.terminals[1]} as this var has no value yet!"
         end
       elsif self.nts[1].is_a?(Numexpr)
         numexpr = self.nts[1]
         unless numexpr.all_vars_have_values(callback, safety_key)
-          raise "#{var.terminals[0]} cannot be assigned a value here, since not all vars in numexpr have values yet!"
+          raise "#{var.terminals[1]} cannot be assigned a value here, since not all vars in numexpr have values yet!"
         end
       end
     end
@@ -559,7 +563,7 @@ end
 
 class WhileLoop < CondLoop #instr
   def trace_flow(callback, safety_key)
-    super(callback, "#{@@safety_key_source += 1}")
+    super(callback, "#{safety_key}.#{@@safety_key_source += 1}")
   end
 
   def calculate_type
@@ -596,8 +600,7 @@ class ForLoop < CondLoop #instr
     vars.each do |child|
       child.trace_flow(callback, safety_key)
     end
-    code.trace_flow(callback, safety_key)
-    @@safety_key_source += 1
+    code.trace_flow(callback, "#{safety_key}.#{@@safety_key_source += 1}")
   end
 
   def raise_issue_if_vars_invalid

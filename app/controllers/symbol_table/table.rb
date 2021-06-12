@@ -126,7 +126,7 @@ end
 class TableEntry
   def initialize(name, internal_name, is_var, is_proc_init, scope_string)
     @set_count = 3
-    @safety_key = "SAFE"
+    @safety_key = "s"
     @flow = "-"
     @user_defined_name = name
     @internal_name = internal_name
@@ -157,7 +157,9 @@ class TableEntry
   end
 
   def set_safety_key(key)
-    @safety_key = key
+    if @safety_key.eql?("s")
+      @safety_key = key
+    end
   end
 
   def set_flow(value)

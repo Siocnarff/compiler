@@ -118,7 +118,7 @@ class TokenGenerator
 
 
   def traceValueFlow
-    @tokens.last.trace_flow(nil, "SAFE")
+    @tokens.last.trace_flow(nil, "s")
   end
 
   def getAllWarnings
