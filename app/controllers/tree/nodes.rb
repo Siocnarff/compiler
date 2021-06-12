@@ -690,7 +690,7 @@ end
 
 class IfThen < CondBranch #instr
   def trace_flow(callback, safety_key)
-    super(callback, "#{@@safety_key_source += 1}")
+    super(callback, "#{safety_key}.#{@@safety_key_source += 1}")
   end
 
   def calculate_type
