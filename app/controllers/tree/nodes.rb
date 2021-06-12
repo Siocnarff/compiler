@@ -1,7 +1,7 @@
 class Token
   def initialize(lhs, rhs, id)
-    @@needsToRepeat = false
-    @@set = false
+    @@needsToRepeat = [false]
+    @@set = [false]
     @@safety_key_source = 0
     @lgr = Logger.new("#{Rails.root}/log/test2.log")
     @warning = ""
@@ -352,12 +352,12 @@ class Var < Token  #NOT instr, only if part of assign
   end
 
   def set_flow(value, safety_key)
-    if @@needsToRepeat
+    if @@needsToRepeat.last
       if not @symbol_table_token_link.read_flow.eql?("+")
         @symbol_table_token_link.set_set_count(0)
       end
       if value.eql?("+")
-        if @@set and not @symbol_table_token_link.get_set_count == 3
+        if @@set.last and not @symbol_table_token_link.get_set_count == 3
           if @symbol_table_token_link.get_set_count == 1
             @symbol_table_token_link.set_set_count(2)
           end
@@ -659,12 +659,12 @@ class IfThenElse < CondBranch #instr
     codeA = self.nts[1]
     codeB = self.nts[2]
     bool.trace_flow(callback, safety_key)
-    @@needsToRepeat = true
+    @@needsToRepeat.push(true)
     codeA.trace_flow(callback, safety_key)
-    @@set = true
+    @@set.push(true)
     codeB.trace_flow(callback, safety_key)
-    @@needsToRepeat = false
-    @@set = false
+    @@needsToRepeat.pop()
+    @@set.pop()
   end
 
   def calculate_type
