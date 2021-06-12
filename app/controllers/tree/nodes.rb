@@ -376,9 +376,6 @@ class Var < Token  #NOT instr, only if part of assign
     end
     target_key = read_safety()
     if target_key.length <= key.length
-      @lgr.info(key.first(target_key.length))
-      @lgr.info(target_key)
-      @lgr.info("===========")
       return key.first(target_key.length).eql?(target_key)
     end
     return false
