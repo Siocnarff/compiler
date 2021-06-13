@@ -120,6 +120,7 @@ class TokenGenerator
     file = Array.new
 
     @tokens.last.generate_code(file, Array.new)
+    file.push("END")
 
     line_counter = 999
     lined_file = Array.new

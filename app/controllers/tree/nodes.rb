@@ -302,7 +302,6 @@ end
 class Prog < Token
   def generate_code(file, labels)
     super
-    file.push("END")
   end
 
   def trace_flow(callback, safety_key)
@@ -439,7 +438,7 @@ end
 
 class Halt < Instr
   def generate_code(file, labels)
-    file.push("HALT")
+    file.push("STOP")
   end
 end
 
