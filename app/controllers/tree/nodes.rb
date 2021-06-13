@@ -743,7 +743,7 @@ class IfThenElse < CondBranch #instr
     self.nts[0].generate_code(file, labels)
     file.push("REM #{label1}")
     self.nts[1].generate_code(file, labels)
-    file.push("GOTO #{lable3}")
+    file.push("GOTO #{label3}")
     file.push("REM #{label2}")
     self.nts[2].generate_code(file, labels)
     file.push("REM #{label3}")
