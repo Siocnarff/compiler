@@ -140,6 +140,14 @@ class TableEntry
     end
   end
 
+  def string_label
+    if @type.eql?("s")
+      return "$"
+    else
+      return ""
+    end
+  end
+
   def set_set_count(value)
     @set_count = value
   end

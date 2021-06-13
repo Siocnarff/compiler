@@ -3,6 +3,7 @@ class Token
     @@needsToRepeat = [false]
     @@set = [false]
     @@safety_key_source = 0
+    @@id_source = 0
     @lgr = Logger.new("#{Rails.root}/log/test2.log")
     @warning = ""
     @error_message = ""
@@ -26,6 +27,12 @@ class Token
     end
     @nt.push(lhs[0])
     @nt.reverse!
+  end
+
+  def generate_code(file, labels)
+    self.nts.each do |child|
+      child.generate_code(file, labels)
+    end
   end
 
   def read_flow(safety_key)
@@ -293,6 +300,11 @@ class Token
 end
 
 class Prog < Token
+  def generate_code(file, labels)
+    super
+    file.push("END")
+  end
+
   def trace_flow(callback, safety_key)
     code = self.nts[0]
     code.trace_flow(callback = self, safety_key)
@@ -324,6 +336,12 @@ class Procc < Token
     @has_outside_call = false
   end
 
+  def generate_code(file, labels)
+    file.push("REM #{self.terminals[0]}")
+    super
+    file.push("RETURN")
+  end
+
   def tag_has_outside_call
     @has_outside_call = true
   end
@@ -337,6 +355,10 @@ class Instr < Token
 end
 
 class Var < Token  #NOT instr, only if part of assign
+  def get_code_name
+    return "#{self.terminals[0]}#{@symbol_table_token_link.string_label}"
+  end
+
   def initialize(lhs, rhs, id)
     super
     @has_init = false
@@ -416,9 +438,16 @@ class Var < Token  #NOT instr, only if part of assign
 end
 
 class Halt < Instr
+  def generate_code(file, labels)
+    file.push("HALT")
+  end
 end
 
 class IOInput < Instr
+  def generate_code(file, labels)
+    file.push("INPUT \"\"; #{self.nts[0].get_code_name}")
+  end
+
   def trace_flow(callback, safety_key)
     var = self.nts[0]
     var.set_flow("+", safety_key)
@@ -438,6 +467,10 @@ class IOInput < Instr
 end
 
 class IOOutput < Instr
+  def generate_code(file, labels)
+    file.push("PRINT #{self.nts[0].get_code_name}")
+  end
+
   def trace_flow(callback, safety_key)
     var = self.nts[0]
     if var.read_flow(safety_key).eql?("-")
@@ -456,6 +489,10 @@ class IOOutput < Instr
 end
 
 class Call < Instr
+  def generate_code(file, labels)
+    file.push("GOSUB #{self.terminals[0]}")
+  end
+
   def initialize(lhs, rhs, id)
     super
     @in_wrong_tree_error = false
@@ -477,6 +514,19 @@ end
 #UserDefinedName
 
 class Assign < Instr
+  def generate_code(file, labels)
+    name = self.nts[0].get_code_name
+    if self.nts.length < 2
+      # assigning to a string or integer
+      file.push("LET #{name} = #{self.terminals[0]}")
+    elsif self.nts[1].is_a?(Var)
+      file.push("LET #{name} = #{self.nts[1].get_code_name}")
+    else
+      labels.push(name)
+      self.nts[1].generate_code(file, labels)
+    end
+  end
+
   def trace_flow(callback, safety_key)
     var = self.nts[0]
     unless self.nts.length == 1
@@ -559,6 +609,21 @@ class CondLoop < Token
 end
 
 class WhileLoop < CondLoop #instr
+  def generate_code(file, labels)
+    label1 = "L#{@@id_source += 1}"
+    label2 = "L#{@@id_source += 1}"
+    label3 = "L#{@@id_source += 1}"
+
+    file.push("REM #{label1}")
+    labels.push(label2)
+    labels.push(label3)
+    self.nts[0].generate_code(file, labels)
+    file.push("REM #{label2}")
+    self.nts[1].generate_code(file, labels)
+    file.push("GOTO #{label1}")
+    file.push("REM #{label3}")
+  end
+
   def trace_flow(callback, safety_key)
     super(callback, "#{safety_key}.#{@@safety_key_source += 1}")
   end
@@ -587,6 +652,24 @@ class WhileLoop < CondLoop #instr
 end
 
 class ForLoop < CondLoop #instr
+  def generate_code(file, labels)
+    label1 = "L#{@@id_source += 1}"
+    label2 = "L#{@@id_source += 1}"
+    label3 = "L#{@@id_source += 1}"
+    file.push("LET #{self.nts[0].get_code_name} = 0")
+    file.push("REM #{label1}")
+    file.push(
+      "IF #{self.nts[1].get_code_name} < #{self.nts[2].get_code_name} " +
+      "THEN GOTO #{label2}"
+    )
+    file.push("GOTO #{label3}")
+    file.push("REM #{label2}")
+    self.nts[5].generate_code(file, labels)
+    file.push("LET #{self.nts[3].get_code_name} = 1 + #{self.nts[4].get_code_name}")
+    file.push("GOTO #{label1}")
+    file.push("REM #{label3}")
+  end
+
   def trace_flow(callback, safety_key)
     self.nts[0].set_flow("+", safety_key)
     if self.nts[2].read_flow(safety_key).eql?("-")
@@ -651,6 +734,21 @@ class CondBranch < Token
 end
 
 class IfThenElse < CondBranch #instr
+  def generate_code(file, labels)
+    label1 = "L#{@@id_source += 1}"
+    label2 = "L#{@@id_source += 1}"
+    label3 = "L#{@@id_source += 1}"
+    labels.push(label1)
+    labels.push(label2)
+    self.nts[0].generate_code(file, labels)
+    file.push("REM #{label1}")
+    self.nts[1].generate_code(file, labels)
+    file.push("GOTO #{lable3}")
+    file.push("REM #{label2}")
+    self.nts[2].generate_code(file, labels)
+    file.push("REM #{label3}")
+  end
+
   def trace_flow(callback, safety_key)
     bool = self.nts[0]
     codeA = self.nts[1]
@@ -689,6 +787,17 @@ class IfThenElse < CondBranch #instr
 end
 
 class IfThen < CondBranch #instr
+  def generate_code(file, labels)
+    label1 = "L#{@@id_source += 1}"
+    label2 = "L#{@@id_source += 1}"
+    labels.push(label1)
+    self.nts[0].generate_code(file, labels)
+    file.push("REM #{label1}")
+    labels.push(label2)
+    self.nts[1].generate_code(file, labels)
+    file.push("REM #{label2}")
+  end
+
   def trace_flow(callback, safety_key)
     super(callback, "#{safety_key}.#{@@safety_key_source += 1}")
   end
@@ -719,6 +828,19 @@ class Numexpr < Token
   def initialize(lhs, rhs, id)
     super
     @flow = "-"
+  end
+
+  def generate_code(file, labels)
+    result = labels.pop
+    if self.nts.length == 0
+      file.push("LET #{result} = #{self.terminals[0]}")
+    elsif self.nts[0].is_a?(Var)
+      file.push("LET #{result} = #{self.nts[0].get_code_name}")
+    else
+      # is a Calc
+      labels.push(result)
+      self.nts[0].generate_code(file, labels)
+    end
   end
 
   def trace_flow(callback, safety_key)
@@ -786,6 +908,21 @@ end
 # VAR, Integer, CALC
 
 class Calc < Token
+  def generate_code(file, labels)
+    result = labels.pop
+    var1  = "C#{@@id_source += 1}"
+    var2 = "C#{@@id_source += 1}"
+    labels.push(var1)
+    self.nts[0].generate_code(file, labels)
+    labels.push(var2)
+    self.nts[1].generate_code(file, labels)
+    file.push("LET #{result} = #{do_calc_specific_code(var1, var2)}")
+  end
+
+  def do_calc_specific_code(var1, var2)
+    raise "children should implement me!"
+  end
+
   def trace_flow(callback, safety_key)
     super
     left = self.nts[0]
@@ -806,15 +943,29 @@ class Calc < Token
 end
 
 class AddCalc < Calc
+  def do_calc_specific_code(var1, var2)
+    return "(#{var1} + #{var2})"
+  end
 end
 
 class SubCalc < Calc
+  def do_calc_specific_code(var1, var2)
+    return "(#{var1} - #{var2})"
+  end
 end
 
 class MultCalc < Calc
+  def do_calc_specific_code(var1, var2)
+    return "(#{var1} * #{var2})"
+  end
 end
 
 class Bool < Token
+  def generate_code(file, labels)
+    result = labels.pop
+
+  end
+
   def trace_flow(callback, safety_key)
     super
     @flow = "+"
@@ -823,6 +974,53 @@ end
 
 class BoolEq < Bool
   # VAR, BOOL, NUMEXPR
+  def generate_code(file, labels)
+    label2 = labels.pop
+    label1 = labels.pop
+
+    self.attempt_reduce_to_var_var
+    left = self.nts[0]
+    right = self.nts[1]
+
+    if left.is_a?(Bool)
+      # then both sides are bool
+      label3 = "L#{@@id_source += 1}"
+      label4 = "L#{@@id_source += 1}"
+      labels.push(label3)
+      labels.push(label4)
+      left.generate_code(file, labels)
+      # if true a second true will go to true code
+      file.push("REM #{label3}")
+      labels.push(label1)
+      labels.push(label2)
+      right.generate_code(file, labels)
+      # if false, a second false will go to true case
+      file.push("REM #{label4}")
+      labels.push(label2)
+      labels.push(label1)
+      right.generate_code(file, labels)
+      return
+    end
+
+    if left.is_a?(Var)
+      c1 = left.get_code_name
+    elsif left.is_a?(Numexpr)
+      c1 = "C#{@@id_source += 1}"
+      labels.push(c1)
+      left.generate_code(file, labels)
+    end
+    if right.is_a?(Var)
+      c2 = right.get_code_name
+    elsif left.is_a?(Numexpr)
+      c2 = "C#{@@id_source += 1}"
+      labels.push(c2)
+      right.generate_code(file, labels)
+    end
+
+    file.push("IF #{c1} = #{c2} THEN GOTO #{label1}")
+    file.push("GOTO #{label2}")
+  end
+
   def calculate_type
     self.attempt_reduce_to_var_var
     left = self.nts[0]
@@ -888,6 +1086,32 @@ class BoolEq < Bool
 end
 
 class BoolLessThan < Bool
+  def generate_code(file, labels)
+    label2 = labels.pop
+    label1 = labels.pop
+
+    left = self.nts[0]
+    right = self.nts[1]
+
+    if left.is_a?(Var)
+      c1 = left.get_code_name
+    elsif left.is_a?(Numexpr)
+      c1 = "C#{@@id_source += 1}"
+      labels.push(c1)
+      left.generate_code(file, labels)
+    end
+    if right.is_a?(Var)
+      c2 = right.get_code_name
+    elsif left.is_a?(Numexpr)
+      c2 = "C#{@@id_source += 1}"
+      labels.push(c2)
+      right.generate_code(file, labels)
+    end
+
+    file.push("IF #{c1} < #{c2} THEN GOTO #{label1}")
+    file.push("GOTO #{label2}")
+  end
+
   def calculate_type
     var_left = self.nts[0]
     var_right = self.nts[1]
@@ -904,6 +1128,32 @@ class BoolLessThan < Bool
 end
 
 class BoolGreaterThan < Bool
+  def generate_code(file, labels)
+    label2 = labels.pop
+    label1 = labels.pop
+
+    left = self.nts[0]
+    right = self.nts[1]
+
+    if left.is_a?(Var)
+      c1 = left.get_code_name
+    elsif left.is_a?(Numexpr)
+      c1 = "C#{@@id_source += 1}"
+      labels.push(c1)
+      left.generate_code(file, labels)
+    end
+    if right.is_a?(Var)
+      c2 = right.get_code_name
+    elsif left.is_a?(Numexpr)
+      c2 = "C#{@@id_source += 1}"
+      labels.push(c2)
+      right.generate_code(file, labels)
+    end
+
+    file.push("IF #{c1} > #{c2} THEN GOTO #{label1}")
+    file.push("GOTO #{label2}")
+  end
+
   def calculate_type
     var_left = self.nts[0]
     var_right = self.nts[1]
@@ -920,6 +1170,13 @@ class BoolGreaterThan < Bool
 end
 
 class BoolNegation < Bool
+  def generate_code(file, labels)
+    label2 = labels.pop
+    label1 = labels.pop
+    labels.push(label2)
+    labels.push(label1)
+    self.nts[0].generate_code(file, labels)
+  end
   def calculate_type
     bool = self.nts[0]
     if bool.calculate_type.eql?("b") or bool.calculate_type.eql?("f")
@@ -935,6 +1192,28 @@ class BoolNegation < Bool
 end
 
 class BoolAnd < Bool
+  def generate_code(file, labels)
+    label2 = labels.pop
+    label1 = labels.pop
+
+    left = self.nts[0]
+    right = self.nts[1]
+
+    label3 = "L#{@@id_source += 1}"
+    label4 = "L#{@@id_source += 1}"
+    labels.push(label3)
+    labels.push(label4)
+    left.generate_code(file, labels)
+    # if true a second true will go to true code
+    file.push("REM #{label3}")
+    labels.push(label1)
+    labels.push(label2)
+    right.generate_code(file, labels)
+    # if false, just jump to false case
+    file.push("REM #{label4}")
+    file.push("GOTO #{label2}")
+  end
+
   def calculate_type
     left = self.nts[0]
     right = self.nts[1]
@@ -952,6 +1231,25 @@ class BoolAnd < Bool
 end
 
 class BoolOr < Bool
+  def generate_code(file, labels)
+    label2 = labels.pop
+    label1 = labels.pop
+
+    left = self.nts[0]
+    right = self.nts[1]
+
+    label3 = "L#{@@id_source += 1}"
+    labels.push(label1)
+    labels.push(label3)
+    left.generate_code(file, labels)
+
+    # if false, try again with other bool
+    file.push("REM #{label3}")
+    labels.push(label2)
+    labels.push(label1)
+    right.generate_code(file, labels)
+  end
+
   def calculate_type
     left = self.nts[0]
     right = self.nts[1]

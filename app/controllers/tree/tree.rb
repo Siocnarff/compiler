@@ -116,6 +116,35 @@ class TokenGenerator
     return @tokens.last
   end
 
+  def generateCode
+    file = Array.new
+
+    @tokens.last.generate_code(file, Array.new)
+
+    line_counter = 999
+    lined_file = Array.new
+
+    label_lines = Hash.new
+
+    file.each do |line|
+      lined_file.push("#{line_counter += 1} #{line}")
+      if line.include?("REM")
+        label_lines[line.split(" ")[1]] = line_counter
+      end
+    end
+
+    number_jump_file = Array.new
+
+    lined_file.each do |line|
+      line_parts = line.split(" ")
+      if line_parts.length > 2 and line_parts.last.include?("L")
+        line_num = label_lines[line_parts.last]
+        line = "#{line[0..-(line_parts.last.length + 1)]} #{line_num}"
+      end
+      number_jump_file.push(line)
+    end
+    return number_jump_file
+  end
 
   def traceValueFlow
     @tokens.last.trace_flow(nil, "s")

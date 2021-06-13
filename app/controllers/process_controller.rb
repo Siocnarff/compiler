@@ -48,7 +48,11 @@ class ProcessController < ApplicationController
 			warnings = treeManager.getAllWarnings
 			@output.push("doing value flow analysis...")
 			treeManager.traceValueFlow
-			@tree = treeManager.drawTree
+			# @tree = treeManager.drawTree
+			@output.push("generating BASIC code...")
+			@output.push("===============================================================================================================")
+			file = treeManager.generateCode
+			@output += file
 			if warnings.length > 0
 				@output.push("---------------------------------------------------------------------------------------------------------------")
 				@output += warnings
@@ -58,22 +62,22 @@ class ProcessController < ApplicationController
 			@output.push(e)
 			return
 		end
-		@output.push("---------------------------------------------------------------------------------------------------------------")
-		@output.push("printing pruned AST...")
-		@output.push("===============================================================================================================")
-		# @output.push(
-		# 	"Notes on tree notation:" +
-		# 	"\n\n\ttype of node is shown as a single character above each node" +
-		# 	"\n\tfor Procc and Var nodes we use [] as follows: [<InternalName>, <UserDefinedName>] for ease of marking" +
-		# 	"\n\n\t{} contains node id\n\t() contains pointers to children\n\t[] holds the variable terminals owned by the node"+
-		# 	"\n\tSolid lines are used to indicate different levels in the tree"
-		# )
 		# @output.push("---------------------------------------------------------------------------------------------------------------")
-		@table = Array.new
-		parse_info[1].getTokens.each do |line|
-			unless line.is_deleted?
-				@table.push(line.printTable)
-			end
-		end
+		# @output.push("printing pruned AST...")
+		# @output.push("===============================================================================================================")
+		# # @output.push(
+		# # 	"Notes on tree notation:" +
+		# # 	"\n\n\ttype of node is shown as a single character above each node" +
+		# # 	"\n\tfor Procc and Var nodes we use [] as follows: [<InternalName>, <UserDefinedName>] for ease of marking" +
+		# # 	"\n\n\t{} contains node id\n\t() contains pointers to children\n\t[] holds the variable terminals owned by the node"+
+		# # 	"\n\tSolid lines are used to indicate different levels in the tree"
+		# # )
+		# # @output.push("---------------------------------------------------------------------------------------------------------------")
+		# @table = Array.new
+		# parse_info[1].getTokens.each do |line|
+		# 	unless line.is_deleted?
+		# 		@table.push(line.printTable)
+		# 	end
+		# end
 	end
 end
