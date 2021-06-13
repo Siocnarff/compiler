@@ -300,10 +300,6 @@ class Token
 end
 
 class Prog < Token
-  def generate_code(file, labels)
-    super
-  end
-
   def trace_flow(callback, safety_key)
     code = self.nts[0]
     code.trace_flow(callback = self, safety_key)
@@ -320,6 +316,13 @@ class Code < Token
 end
 
 class ProcDefs < Token
+  def generate_code(file, labels)
+    labelA = "L#{@@id_source += 1}"
+    file.push("GOTO #{labelA}")
+    super
+    file.push("REM #{labelA}")
+  end
+
   def trace_flow_in_proc(name, callback, safety_key)
     self.nts.each do |procdef|
       if procdef.terminals[0].eql?(name)
