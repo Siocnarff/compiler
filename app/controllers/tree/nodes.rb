@@ -791,9 +791,9 @@ class IfThen < CondBranch #instr
     label1 = "L#{@@id_source += 1}"
     label2 = "L#{@@id_source += 1}"
     labels.push(label1)
+    labels.push(label2)
     self.nts[0].generate_code(file, labels)
     file.push("REM #{label1}")
-    labels.push(label2)
     self.nts[1].generate_code(file, labels)
     file.push("REM #{label2}")
   end
@@ -1016,7 +1016,6 @@ class BoolEq < Bool
       labels.push(c2)
       right.generate_code(file, labels)
     end
-
     file.push("IF #{c1} = #{c2} THEN GOTO #{label1}")
     file.push("GOTO #{label2}")
   end

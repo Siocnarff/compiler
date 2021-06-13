@@ -137,9 +137,9 @@ class TokenGenerator
 
     lined_file.each do |line|
       line_parts = line.split(" ")
-      if line_parts.length > 2 and line_parts.last.include?("L")
+      if line_parts.length > 2 and (line_parts.last.include?("L") or line_parts.last.include?("P"))
         line_num = label_lines[line_parts.last]
-        line = "#{line[0..-(line_parts.last.length + 1)]} #{line_num}"
+        line = "#{line[0..-(line_parts.last.length + 1)]}#{line_num}"
       end
       number_jump_file.push(line)
     end
