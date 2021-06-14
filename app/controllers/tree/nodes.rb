@@ -1236,8 +1236,8 @@ class BoolOr < Bool
 
     left = self.nts[0]
     right = self.nts[1]
-    
-    label3 = "L7#{@@id_source += 1}"
+
+    label3 = "L#{@@id_source += 1}"
     labels.push(label1)
     labels.push(label3)
     left.generate_code(file, labels)
