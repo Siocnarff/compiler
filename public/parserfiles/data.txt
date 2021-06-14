@@ -117,7 +117,7 @@ DFA State	P	PROG	CODE	INSTR	halt	IO	CALL	ASSIGN	COND_BRANCH	COND_LOOP	if	while	f
 115																																											116					115
 116																						90				117						79	78	112										77				116
 117																							118																									117
-118	35																																															118
+118	36																																															118
 119																						120																										119
 120																31	121																															120
 121																							122																									121
