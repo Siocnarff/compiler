@@ -1202,18 +1202,15 @@ class BoolAnd < Bool
     right = self.nts[1]
 
     label3 = "L#{@@id_source += 1}"
-    label4 = "L#{@@id_source += 1}"
     labels.push(label3)
-    labels.push(label4)
+    labels.push(label2)
     left.generate_code(file, labels)
+    # if false, just jump to false case
     # if true a second true will go to true code
     file.push("REM #{label3}")
     labels.push(label1)
     labels.push(label2)
     right.generate_code(file, labels)
-    # if false, just jump to false case
-    file.push("REM #{label4}")
-    file.push("GOTO #{label2}")
   end
 
   def calculate_type
@@ -1247,8 +1244,8 @@ class BoolOr < Bool
 
     # if false, try again with other bool
     file.push("REM #{label3}")
-    labels.push(label2)
     labels.push(label1)
+    labels.push(label2)
     right.generate_code(file, labels)
   end
 
