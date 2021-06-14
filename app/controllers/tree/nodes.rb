@@ -1117,7 +1117,7 @@ class BoolLessThan < Bool
     var_left = self.nts[0]
     var_right = self.nts[1]
     if var_left.calculate_type.eql?("s") or var_right.calculate_type.eql?("s")
-      @type_error = "less than comparison may not operate on strings!"
+      @error_message = "less than comparison may not operate on strings!"
       @type = "e"
     else
       var_left.set_type("n")
@@ -1159,7 +1159,7 @@ class BoolGreaterThan < Bool
     var_left = self.nts[0]
     var_right = self.nts[1]
     if var_left.calculate_type.eql?("s") or var_right.calculate_type.eql?("s")
-      @type_error = "greater than comparison may not operate on strings!"
+      @error_message = "greater than comparison may not operate on strings!"
       @type = "e"
     else
       var_left.set_type("n")
