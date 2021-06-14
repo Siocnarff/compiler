@@ -47,7 +47,7 @@ class ProcessController < ApplicationController
 			treeManager.pruneBasedOnType
 			warnings = treeManager.getAllWarnings
 			@output.push("doing value flow analysis...")
-			treeManager.traceValueFlow
+			# treeManager.traceValueFlow
 			# @tree = treeManager.drawTree
 			@output.push("generating BASIC code...")
 			@output.push("======================= you can run the generated code at: http://www.quitebasic.com/ =======================")
