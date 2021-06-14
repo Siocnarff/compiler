@@ -50,7 +50,7 @@ class ProcessController < ApplicationController
 			treeManager.traceValueFlow
 			# @tree = treeManager.drawTree
 			@output.push("generating BASIC code...")
-			@output.push("===============================================================================================================")
+			@output.push("======================= you can run the generated code at: http://www.quitebasic.com/ =======================")
 			file = treeManager.generateCode
 			@output += file
 			if warnings.length > 0
