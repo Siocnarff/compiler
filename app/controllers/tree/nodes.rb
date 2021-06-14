@@ -752,6 +752,7 @@ class IfThenElse < CondBranch #instr
   end
 
   def trace_flow(callback, safety_key)
+    return
     bool = self.nts[0]
     codeA = self.nts[1]
     codeB = self.nts[2]
